@@ -1,9 +1,7 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../constants/color.dart';
-import '../constants/constant.dart';
 import '../providers/login_provider.dart';
 import '../widgets/customButton.dart';
 import '../widgets/customTextField.dart';
@@ -15,326 +13,206 @@ class LoginPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(loginViewModelProvider);
     final viewModel = ref.read(loginViewModelProvider.notifier);
-    final keyboardHeight = MediaQuery.viewInsetsOf(context).bottom;
-    final isKeyboardOpen = keyboardHeight > 0;
+    final formKey = GlobalKey<FormState>();
 
     return Scaffold(
-      backgroundColor: Colors.white,
-      resizeToAvoidBottomInset: false,
-      body: GestureDetector(
-        onTap: () => FocusScope.of(context).unfocus(),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final screenHeight = constraints.maxHeight;
-            final screenWidth = constraints.maxWidth;
-
-            final headerHeight = isKeyboardOpen
-                ? screenHeight * 0.36
-                : screenHeight * 0.46;
-
-            return SingleChildScrollView(
-              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                child: IntrinsicHeight(
-                  child: Column(
+      backgroundColor: const Color(0xFFFAFAFA),
+      body: SafeArea(
+        child: GestureDetector(
+          onTap: () => FocusScope.of(context).unfocus(),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 24.0,
+              vertical: 20.0,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 20),
+                const Text(
+                  'WELCOME BACK',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.5,
+                    color: Colors.black54,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Login to ADINN',
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.black,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Plan apartment activations, manage campaigns,\nand request quotes in minutes.',
+                  style: TextStyle(
+                    fontSize: 15,
+                    height: 1.4,
+                    color: Colors.black54,
+                  ),
+                ),
+                const SizedBox(height: 32),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: Colors.black,
+                    borderRadius: BorderRadius.circular(24),
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF0A0A0A), Color(0xFF2B0000)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                  ),
+                  child: Row(
                     children: [
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 250),
-                        curve: Curves.easeOut,
-                        height: headerHeight,
-                        child: LoginHeader(
-                          height: headerHeight,
-                          keyboardOpen: isKeyboardOpen,
-                        ),
-                      ),
-                      SizedBox(height: 13),
-                      Expanded(
-                        child: Transform.translate(
-                          offset: Offset(0, isKeyboardOpen ? -25 : -40),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 26),
-                            child: FittedBox(
-                              fit: BoxFit.scaleDown,
-                              alignment: Alignment.topCenter,
-                              child: SizedBox(
-                                width: screenWidth - 52,
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      'Apartment Events',
-                                      style: TextStyle(
-                                        fontSize: 28,
-                                        fontWeight: FontWeight.w600,
-                                        color: AppColors.red,
-                                      ),
-                                    ),
-
-                                    if (!isKeyboardOpen) ...[
-                                      const Text(
-                                        'Manage events, collect visitor details, connect brands and residents.',
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                          fontSize: 15,
-                                          height: 1.3,
-                                          color: AppColors.textGrey,
-                                        ),
-                                      ),
-
-                                      const SizedBox(height: 14),
-
-                                      const Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          FeatureItem(
-                                            icon: Icons.calendar_month_outlined,
-                                            title: 'Events Management',
-                                          ),
-                                          FeatureItem(
-                                            icon: Icons.badge_outlined,
-                                            title: 'Visitors Management',
-                                          ),
-                                          FeatureItem(
-                                            icon: Icons.campaign_outlined,
-                                            title: 'Brand Activations',
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 18),
-                                    ] else
-                                      const SizedBox(height: 13),
-                                    LoginForm(
-                                      state: state,
-                                      viewModel: viewModel,
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 15.0),
-                                      child: RichText(
-                                        text: TextSpan(
-                                          style: const TextStyle(
-                                            fontSize: 18,
-                                            color: Colors.black,
-                                          ),
-                                          children: [
-                                            const TextSpan(
-                                              text: "Don't have an account? ",
-                                            ),
-                                            TextSpan(
-                                              text: "Register",
-                                              style: TextStyle(
-                                                color: AppColors.red,
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                              recognizer: TapGestureRecognizer()
-                                                ..onTap = () {
-                                                  Navigator.pushNamed(
-                                                    context,
-                                                    '/register',
-                                                  );
-                                                },
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFE5212A),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(
+                              Icons.ac_unit,
+                              color: Colors.white,
+                              size: 20,
                             ),
                           ),
-                        ),
+                          const SizedBox(height: 16),
+                          const Text(
+                            'Campaigns for\npremium communities,\nbuilt in minutes.',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              height: 1.2,
+                            ),
+                          ),
+                        ],
+                      ),
+                      SvgPicture.asset(
+                        AppImages.loginAsset,
+                        height: 80,
+                        width: 40,
                       ),
                     ],
                   ),
                 ),
-              ),
-            );
-          },
-        ),
-      ),
-    );
-  }
-}
+                const SizedBox(height: 32),
+                Form(
+                  key: formKey,
+                  child: Column(
+                    children: [
+                      CustomTextField(
+                        prefixIcon: Icons.phone,
+                        hintText: 'Mobile number',
+                        iconColor: Colors.black54,
+                        keyboardType: TextInputType.phone,
+                        controller: viewModel.phoneNumber,
+                        focusNode: viewModel.phoneNumberFocus,
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Enter mobile number';
+                          }
 
-class LoginHeader extends StatelessWidget {
-  final double height;
-  final bool keyboardOpen;
+                          if (value.trim().length != 10) {
+                            return 'Enter valid mobile number';
+                          }
 
-  const LoginHeader({
-    super.key,
-    required this.height,
-    required this.keyboardOpen,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        Image.asset(
-          AppImages.background,
-          width: double.infinity,
-          height: height,
-          fit: BoxFit.fill,
-          alignment: Alignment.topCenter,
-        ),
-        Positioned(
-          left: 0,
-          right: 0,
-          bottom: 0,
-          height: keyboardOpen ? 100 : 130,
-          child: Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [Colors.transparent, Colors.white70, Colors.white],
-              ),
-            ),
-          ),
-        ),
-
-        Positioned(
-          left: 0,
-          right: -5,
-          bottom: keyboardOpen ? 20 : 35,
-          child: Center(
-            child: Container(
-              width: 80,
-              height: 80,
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.12),
-                    blurRadius: 20,
-                    offset: const Offset(0, 8),
+                          return null;
+                        },
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              child: ClipOval(
-                child: Image.asset(AppImages.logo, fit: BoxFit.contain),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
+                ),
+                const SizedBox(height: 24),
+                CustomButton(
+                  text: 'Login',
+                  isLoading: state.isLoading,
+                  onPressed: () async {
+                    if (!(formKey.currentState?.validate() ?? false)) {
+                      return;
+                    }
 
-class LoginForm extends ConsumerStatefulWidget {
-  final LoginState state;
-  final LoginViewModel viewModel;
-
-  const LoginForm({super.key, required this.state, required this.viewModel});
-
-  @override
-  ConsumerState<LoginForm> createState() => _LoginFormState();
-}
-
-class _LoginFormState extends ConsumerState<LoginForm> {
-  final _formKey = GlobalKey<FormState>();
-
-  @override
-  Widget build(BuildContext context) {
-    return Form(
-      key: _formKey,
-      child: Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(30),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.08),
-              blurRadius: 35,
-              offset: const Offset(0, 12),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            CustomTextField(
-              prefixIcon: Icons.person_outline,
-              hintText: 'Phone',
-              iconColor: Colors.red,
-              keyboardType: TextInputType.number,
-              controller: widget.viewModel.phoneController,
-              onChanged: (value) {
-                if (value.length == 10) {
-                  FocusScope.of(
-                    context,
-                  ).requestFocus(widget.viewModel.passwordFocus);
-                }
-              },
-              inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,
-                LengthLimitingTextInputFormatter(10),
+                    final success = await viewModel.login();
+                    if (success && context.mounted) {
+                      Navigator.pushNamed(context, '/otp',arguments: {
+                        'phoneNumber':viewModel.phoneNumber.text.trim(),
+                        'otpType': 'login'
+                      });
+                    }
+                  },
+                  color: Colors.black,
+                  radius: 24,
+                  textColor: Colors.white,
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: OutlinedButton(
+                    onPressed: () {
+                      ref.read(loginViewModelProvider.notifier).clear();
+                      Navigator.pushNamed(context, '/register');
+                    },
+                    style: OutlinedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                      side: BorderSide(color: Colors.grey.shade300),
+                    ),
+                    child: RichText(
+                      text: const TextSpan(
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black54,
+                        ),
+                        children: [
+                          TextSpan(text: "Don't have an account? "),
+                          TextSpan(
+                            text: "Register",
+                            style: TextStyle(color: AppColors.red),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 40),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.verified_user_outlined,
+                      color: Colors.grey.shade600,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Secure, trusted, and built for brand owners and agencies.',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
               ],
-              focusNode: widget.viewModel.phoneFocus,
-              validator: (value) => Validator.validate(value, "Phone number"),
             ),
-            const SizedBox(height: 14),
-            CustomTextField(
-              prefixIcon: Icons.lock_outline,
-              hintText: 'Password',
-              obscureText: widget.state.obscurePassword,
-              suffixIcon: widget.state.obscurePassword
-                  ? Icons.visibility_off
-                  : Icons.visibility,
-              iconColor: Colors.red,
-              controller: widget.viewModel.passwordController,
-              focusNode: widget.viewModel.passwordFocus,
-              onSuffixTap: widget.viewModel.togglePasswordVisibility,
-              validator: (value) => Validator.validate(value, "Password"),
-            ),
-            const SizedBox(height: 20),
-            CustomButton(
-              text: 'Login',
-              isLoading: widget.state.isLoading,
-              onPressed: () async {
-                if (!_formKey.currentState!.validate()) return;
-
-                final success = await widget.viewModel.login();
-                if (success && context.mounted) {
-                  Navigator.pushReplacementNamed(context, '/bottomNav');
-                }
-              },
-              radius: 14,
-              textColor: Colors.white,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class FeatureItem extends StatelessWidget {
-  final IconData icon;
-  final String title;
-
-  const FeatureItem({super.key, required this.icon, required this.title});
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: Column(
-        children: [
-          Icon(icon, color: AppColors.red, size: 30),
-          const SizedBox(height: 5),
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 14, color: AppColors.textGrey),
           ),
-        ],
+        ),
       ),
     );
   }

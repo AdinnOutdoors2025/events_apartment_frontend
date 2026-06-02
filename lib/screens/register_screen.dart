@@ -15,192 +15,120 @@ class RegisterPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(registerViewModelProvider);
     final viewModel = ref.read(registerViewModelProvider.notifier);
-    final keyboardHeight = MediaQuery.viewInsetsOf(context).bottom;
-    final isKeyboardOpen = keyboardHeight > 0;
 
     return Scaffold(
       backgroundColor: Colors.white,
-      resizeToAvoidBottomInset: false,
-      body: GestureDetector(
-        onTap: () => FocusScope.of(context).unfocus(),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final screenHeight = constraints.maxHeight;
-            final screenWidth = constraints.maxWidth;
+      body: SafeArea(
+        child: GestureDetector(
+          onTap: () => FocusScope.of(context).unfocus(),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'GET STARTED',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1.5,
+                    color: AppColors.textGrey,
+                  ),
+                ),
 
-            final headerHeight = isKeyboardOpen
-                ? screenHeight * 0.36
-                : screenHeight * 0.46;
+                const SizedBox(height: 8),
 
-            return SingleChildScrollView(
-              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                child: IntrinsicHeight(
-                  child: Column(
+                const Text(
+                  'Create your account',
+                  style: TextStyle(
+                    fontSize: 34,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black,
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                const Text(
+                  'Book apartment activations, add stage and promoters, and request quotes for premium communities.',
+                  style: TextStyle(
+                    fontSize: 15,
+                    height: 1.5,
+                    color: AppColors.textGrey,
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                /// HERO CARD
+                Container(
+                  height: 170,
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(18),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(22),
+                    gradient: const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Color(0xFF000000), Color(0xFF2B0000)],
+                    ),
+                  ),
+                  child: Row(
                     children: [
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 250),
-                        curve: Curves.easeOut,
-                        height: headerHeight,
-                        child: RegisterHeader(
-                          height: headerHeight,
-                          keyboardOpen: isKeyboardOpen,
-                        ),
-                      ),
-                      SizedBox(height: 13),
                       Expanded(
-                        child: Transform.translate(
-                          offset: Offset(0, isKeyboardOpen ? -25 : -40),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 26),
-                            child: FittedBox(
-                              fit: BoxFit.scaleDown,
-                              alignment: Alignment.topCenter,
-                              child: SizedBox(
-                                width: screenWidth - 52,
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      'Apartment Events',
-                                      style: TextStyle(
-                                        fontSize: 28,
-                                        fontWeight: FontWeight.w600,
-                                        color: AppColors.red,
-                                      ),
-                                    ),
-                                    if (!isKeyboardOpen) ...[
-                                      const SizedBox(height: 5),
-                                      const Text(
-                                        'Join us to manage events and visitors.',
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                          fontSize: 15,
-                                          height: 1.3,
-                                          color: AppColors.textGrey,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 14),
-                                    ] else
-                                      const SizedBox(height: 13),
-                                    RegisterForm(
-                                      state: state,
-                                      viewModel: viewModel,
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 15.0),
-                                      child: RichText(
-                                        text: TextSpan(
-                                          style: const TextStyle(
-                                            fontSize: 18,
-                                            color: Colors.black,
-                                          ),
-                                          children: [
-                                            const TextSpan(
-                                              text: "Already have an account? ",
-                                            ),
-                                            TextSpan(
-                                              text: "Login",
-                                              style: TextStyle(
-                                                color: AppColors.red,
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                              recognizer: TapGestureRecognizer()
-                                                ..onTap = () {
-                                                  Navigator.pushNamed(
-                                                    context,
-                                                    '/login',
-                                                  );
-                                                },
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Color(0xFFE5212A),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Icon(
+                                Icons.ac_unit,
+                                color: Colors.white,
+                                size: 18,
                               ),
                             ),
+
+                            const SizedBox(height: 14),
+
+                            const Text(
+                              'Launch apartment\ncampaigns with the\nright spaces and\non-ground support.',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                                height: 1.15,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      /// SVG BUILDING HERE
+                      SizedBox(
+                        width: 100,
+                        child: Center(
+                          child: Text(
+                            'SVG',
+                            style: TextStyle(color: Colors.red),
                           ),
                         ),
                       ),
                     ],
                   ),
                 ),
-              ),
-            );
-          },
+
+                const SizedBox(height: 20),
+
+                RegisterForm(state: state, viewModel: viewModel),
+              ],
+            ),
+          ),
         ),
       ),
-    );
-  }
-}
-
-class RegisterHeader extends StatelessWidget {
-  final double height;
-  final bool keyboardOpen;
-
-  const RegisterHeader({
-    super.key,
-    required this.height,
-    required this.keyboardOpen,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        Image.asset(
-          AppImages.background,
-          width: double.infinity,
-          height: height,
-          fit: BoxFit.fill,
-          alignment: Alignment.topCenter,
-        ),
-        Positioned(
-          left: 0,
-          right: 0,
-          bottom: 0,
-          height: keyboardOpen ? 100 : 130,
-          child: Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [Colors.transparent, Colors.white70, Colors.white],
-              ),
-            ),
-          ),
-        ),
-        Positioned(
-          left: 0,
-          right: -5,
-          bottom: keyboardOpen ? 20 : 35,
-          child: Center(
-            child: Container(
-              width: 80,
-              height: 80,
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.12),
-                    blurRadius: 20,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
-              ),
-              child: ClipOval(
-                child: Image.asset(AppImages.logo, fit: BoxFit.contain),
-              ),
-            ),
-          ),
-        ),
-      ],
     );
   }
 }
@@ -218,89 +146,209 @@ class RegisterForm extends ConsumerStatefulWidget {
 class _RegisterFormState extends ConsumerState<RegisterForm> {
   final _formKey = GlobalKey<FormState>();
 
+  bool obscurePassword = true;
+
   @override
   Widget build(BuildContext context) {
     return Form(
       key: _formKey,
-      child: Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(30),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.08),
-              blurRadius: 35,
-              offset: const Offset(0, 12),
+      child: Column(
+        children: [
+          /// FULL NAME
+          CustomTextField(
+            prefixIcon: Icons.person_outline,
+            hintText: "Full name",
+            controller: widget.viewModel.nameController,
+            focusNode: widget.viewModel.nameFocus,
+          ),
+
+          const SizedBox(height: 12),
+
+          /// PHONE
+          CustomTextField(
+            prefixIcon: Icons.phone_outlined,
+            hintText: "Phone number",
+            keyboardType: TextInputType.phone,
+            controller: widget.viewModel.phoneController,
+            focusNode: widget.viewModel.phoneFocus,
+          ),
+
+          const SizedBox(height: 12),
+
+          /// EMAIL
+          CustomTextField(
+            prefixIcon: Icons.mail_outline,
+            hintText: "Email(Optional)",
+            keyboardType: TextInputType.emailAddress,
+            controller: widget.viewModel.emailController,
+            focusNode: widget.viewModel.emailFocus,
+          ),
+
+          const SizedBox(height: 18),
+
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              "I am a",
+              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
             ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            CustomTextField(
-              prefixIcon: Icons.person_outline,
-              hintText: 'Mobile Number',
-              iconColor: Colors.red,
-              keyboardType: TextInputType.number,
-              controller: widget.viewModel.phoneController,
-              onChanged: (value) {
-                if (value.length == 10) {
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    if (mounted) {
-                      widget.viewModel.passwordFocus.requestFocus();
-                    }
-                  });
+          ),
+
+          const SizedBox(height: 12),
+
+          Row(
+            children: [
+              Expanded(
+                child: _roleButton(
+                  title: "Brand Owner",
+                  icon: Icons.apartment,
+                  selected: widget.state.selectedRole == "Brand Owner",
+                  onTap: () {
+                    widget.viewModel.setRole("Brand Owner");
+                  },
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _roleButton(
+                  title: "Agency",
+                  icon: Icons.groups_outlined,
+                  selected: widget.state.selectedRole == "Agency",
+                  onTap: () {
+                    widget.viewModel.setRole("Agency");
+                  },
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 18),
+
+          SizedBox(
+            height: 52,
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () async {
+                if (!(_formKey.currentState?.validate() ?? false)) {
+                  return;
+                }
+
+                final success = await widget.viewModel.register(
+                  widget.state.selectedRole == "Brand Owner" ? 1 : 2,
+                );
+
+                if (success && context.mounted) {
+                  Navigator.pushNamed(
+                    context,
+                    '/otp',
+                    arguments: {
+                      'phoneNumber': widget.viewModel.phoneController.text
+                          .trim(),
+                      'otpType': 'register',
+                    },
+                  );
                 }
               },
-              inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,
-                LengthLimitingTextInputFormatter(10),
-              ],
-              focusNode: widget.viewModel.phoneFocus,
-              validator: (value) => Validator.validate(value, "Mobile number"),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.black,
+                foregroundColor: Colors.white,
+                shape: const StadiumBorder(),
+              ),
+              child: const Text(
+                "Create account",
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
             ),
-            const SizedBox(height: 14),
-            CustomTextField(
-              prefixIcon: Icons.lock_outline,
-              hintText: 'Password',
-              obscureText: widget.state.obscurePassword,
-              suffixIcon: widget.state.obscurePassword
-                  ? Icons.visibility_off
-                  : Icons.visibility,
-              iconColor: Colors.red,
-              controller: widget.viewModel.passwordController,
-              focusNode: widget.viewModel.passwordFocus,
-              onSuffixTap: widget.viewModel.togglePasswordVisibility,
-              validator: (value) => Validator.validate(value, "Password"),
-            ),
-            const SizedBox(height: 14),
-            CustomTextField(
-              prefixIcon: Icons.email_outlined,
-              hintText: 'Email (Optional)',
-              iconColor: Colors.red,
-              keyboardType: TextInputType.emailAddress,
-              controller: widget.viewModel.emailController,
-              focusNode: widget.viewModel.emailFocus,
-            ),
-            const SizedBox(height: 20),
-            CustomButton(
-              text: 'Register',
-              isLoading: widget.state.isLoading,
-              onPressed: () async {
-                if (!_formKey.currentState!.validate()) return;
+          ),
 
-                /* final success = await viewModel.register();
-                if (success && context.mounted) {*/
-                Navigator.pushNamed(
-                  context,
-                  '/otp',
-                  // arguments: viewModel.phoneController.text,
-                );
-                /* }*/
+          const SizedBox(height: 12),
+
+          SizedBox(
+            height: 52,
+            width: double.infinity,
+            child: OutlinedButton(
+              onPressed: () {
+                Navigator.pushNamed(context, '/login');
               },
-              radius: 14,
-              textColor: Colors.white,
+              style: OutlinedButton.styleFrom(
+                shape: const StadiumBorder(),
+                side: BorderSide(color: Colors.grey.shade300),
+              ),
+              child: RichText(
+                text: const TextSpan(
+                  children: [
+                    TextSpan(
+                      text: "Already have an account? ",
+                      style: TextStyle(color: Colors.black54),
+                    ),
+                    TextSpan(
+                      text: "Login",
+                      style: TextStyle(
+                        color: Colors.red,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          Text.rich(
+            TextSpan(
+              children: [
+                TextSpan(
+                  text: "By continuing, you agree to the ",
+                  style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+                ),
+                const TextSpan(
+                  text: "Terms & Privacy Policy.",
+                  style: TextStyle(
+                    color: Colors.black87,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _roleButton({
+    required String title,
+    required IconData icon,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(18),
+      onTap: onTap,
+      child: Container(
+        height: 50,
+        decoration: BoxDecoration(
+          color: selected ? Colors.black : Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: selected ? Colors.red : Colors.grey.shade300,
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 18, color: selected ? Colors.red : Colors.grey),
+            const SizedBox(width: 8),
+            Text(
+              title,
+              style: TextStyle(
+                color: selected ? Colors.white : Colors.black87,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ],
         ),

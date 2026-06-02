@@ -5,33 +5,33 @@ import '../constants/constant.dart';
 import '../utils/api_service.dart';
 
 class RegisterState {
-  final bool obscurePassword;
   final bool isLoading;
+  final String selectedRole;
 
   const RegisterState({
-    this.obscurePassword = true,
     this.isLoading = false,
+    this.selectedRole = 'Brand Owner',
   });
 
   RegisterState copyWith({
     bool? obscurePassword,
     bool? isLoading,
+    String? selectedRole,
   }) {
     return RegisterState(
-      obscurePassword: obscurePassword ?? this.obscurePassword,
       isLoading: isLoading ?? this.isLoading,
+      selectedRole: selectedRole ?? this.selectedRole,
     );
   }
 }
 
 class RegisterViewModel extends Notifier<RegisterState> {
-
+  final nameController = TextEditingController();
   final phoneController = TextEditingController();
-  final passwordController = TextEditingController();
   final emailController = TextEditingController();
 
+  final nameFocus = FocusNode();
   final phoneFocus = FocusNode();
-  final passwordFocus = FocusNode();
   final emailFocus = FocusNode();
 
   final ApiService apiService = ApiService();
@@ -39,40 +39,48 @@ class RegisterViewModel extends Notifier<RegisterState> {
   @override
   RegisterState build() {
     ref.onDispose(() {
+      nameController.dispose();
       phoneController.dispose();
-      passwordController.dispose();
       emailController.dispose();
+      nameFocus.dispose();
       phoneFocus.dispose();
-      passwordFocus.dispose();
       emailFocus.dispose();
     });
 
     return const RegisterState();
   }
 
-  void togglePasswordVisibility() {
-    state = state.copyWith(
-      obscurePassword: !state.obscurePassword,
-    );
+  void setRole(String role) {
+    state = state.copyWith(selectedRole: role);
   }
 
+  void clear() {
+    nameController.clear();
+    phoneController.clear();
+    emailController.clear();
+    state = const RegisterState();
+  }
 
-  Future<bool> register() async {
-
-
+  Future<bool> register(int selectedRole) async {
     try {
       state = state.copyWith(isLoading: true);
 
       final response = await apiService.registerPostAPI(
         phone: phoneController.text.trim(),
-        password: passwordController.text.trim(),
         email: emailController.text.trim(),
+        name: nameController.text.trim(),
+        customerType: selectedRole,
       );
 
       if (response["success"] == true) {
-        AppToast.showSuccess(response["message"] ?? "Registration successful");
+        AppToast.showSuccess(
+          response["message"] ?? "Registration successful",
+        );
         return true;
       } else {
+        AppToast.showError(
+          response["message"] ?? "Registration failed",
+        );
         return false;
       }
     } catch (e) {
@@ -86,5 +94,5 @@ class RegisterViewModel extends Notifier<RegisterState> {
 
 final registerViewModelProvider =
     NotifierProvider.autoDispose<RegisterViewModel, RegisterState>(
-  RegisterViewModel.new,
-);
+      RegisterViewModel.new,
+    );

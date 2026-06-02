@@ -1,0 +1,231 @@
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+
+import '../widgets/brand_text_field.dart';
+
+class BrandProfileScreen extends StatefulWidget {
+  const BrandProfileScreen({super.key});
+
+  @override
+  State<BrandProfileScreen> createState() => _BrandProfileScreenState();
+}
+
+class _BrandProfileScreenState extends State<BrandProfileScreen> {
+  String selectedIndustry = 'Automobile';
+  String selectedGoal = 'Lead Generation';
+
+  final List<String> industries = [
+    'Real Estate', 'Automobile', 'FMCG', 'Food & Beverage',
+    'Education', 'Healthcare', 'Finance', 'Fashion',
+    'Electronics', 'Other'
+  ];
+
+  final List<String> goals = [
+    'Brand Awareness', 'Lead Generation', 'Spot Sales',
+    'Product Sampling', 'Festival Promotion'
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8F9FA),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFFF8F9FA),
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          'Brand Profile',
+          style: GoogleFonts.inter(
+            color: Colors.black,
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        centerTitle: true,
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pushReplacementNamed(context, '/bottomNav');
+            },
+            child: Text(
+              'Skip',
+              style: GoogleFonts.inter(
+                color: Colors.grey[600],
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'STEP 2 OF 2',
+              style: GoogleFonts.inter(
+                color: const Color(0xFFE5212A),
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.5,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Set up your brand profile',
+              style: GoogleFonts.inter(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+                letterSpacing: -0.5,
+              ),
+            ),
+            const SizedBox(height: 24),
+            
+            // Upload Logo
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.grey[300]!),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[100],
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(Icons.upload_outlined, color: Colors.grey[700]),
+                  ),
+                  const SizedBox(width: 16),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Upload brand logo',
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'PNG / SVG - up to 2 MB',
+                        style: GoogleFonts.inter(
+                          color: Colors.grey[600],
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            buildLabel('BRAND NAME'),
+            buildTextField('Acme Mobility'),
+            const SizedBox(height: 24),
+
+            buildLabel('INDUSTRY CATEGORY'),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: industries.map((industry) {
+                return _buildChip(
+                  label: industry,
+                  isSelected: selectedIndustry == industry,
+                  onTap: () => setState(() => selectedIndustry = industry),
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 24),
+
+            buildLabel('PRODUCT / SERVICE DESCRIPTION'),
+            buildTextField('Premium electric SUV'),
+            const SizedBox(height: 24),
+
+            buildLabel('TARGET CUSTOMER'),
+            buildTextField('Urban families, 35–55, ₹1Cr+ home value'),
+            const SizedBox(height: 24),
+
+            buildLabel('AVERAGE PRODUCT PRICE'),
+            buildTextField('₹ 65,00,000'),
+            const SizedBox(height: 24),
+
+            buildLabel('CAMPAIGN GOAL'),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: goals.map((goal) {
+                return _buildChip(
+                  label: goal,
+                  isSelected: selectedGoal == goal,
+                  onTap: () => setState(() => selectedGoal = goal),
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 32),
+
+            // Save Profile Button
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.pushReplacementNamed(context, '/bottomNav');
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.black,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24.0),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+                ),
+                child: Text(
+                  'Save Profile',
+                  style: GoogleFonts.inter(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildChip({required String label, required bool isSelected, required VoidCallback onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.black : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? Colors.black : Colors.grey[300]!,
+          ),
+        ),
+        child: Text(
+          label,
+          style: GoogleFonts.inter(
+            color: isSelected ? Colors.white : Colors.black,
+            fontSize: 12,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+          ),
+        ),
+      ),
+    );
+  }
+}

@@ -6,7 +6,7 @@ class ApiService {
   ApiService() {
     _dio = Dio(
       BaseOptions(
-        baseUrl: 'https://yourapi.com/api',
+        baseUrl: 'http://localhost:5000',
         connectTimeout: const Duration(seconds: 30),
         receiveTimeout: const Duration(seconds: 30),
         headers: {
@@ -19,14 +19,12 @@ class ApiService {
 
   Future<Map<String, dynamic>> loginPostAPI({
     required String phone,
-    required String password,
   }) async {
     try {
       final response = await _dio.post(
-        '/login',
+        '/user/login',
         data: {
-          'phone': phone,
-          'password': password,
+          'userPhone': phone,
         },
       );
 
@@ -44,17 +42,19 @@ class ApiService {
   }
 
   Future<Map<String, dynamic>> registerPostAPI({
+    required String name,
     required String phone,
-    required String password,
+    required int customerType,
     String? email,
   }) async {
     try {
       final response = await _dio.post(
-        '/register',
+        '/user/register',
         data: {
-          'phone': phone,
-          'password': password,
-          if (email != null && email.isNotEmpty) 'email': email,
+          'userName': name,
+          'userPhone': phone,
+          'customerType': customerType,
+          if (email != null && email.isNotEmpty) 'userEmail': email,
         },
       );
       return response.data;
@@ -73,9 +73,9 @@ class ApiService {
   }) async {
     try {
       final response = await _dio.post(
-        '/verify-otp',
+        '/user/verify-otp',
         data: {
-          'phone': phone,
+          'userPhone': phone,
           'otp': otp,
         },
       );

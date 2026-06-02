@@ -55,6 +55,7 @@ class AppToast {
     );
   }
 }
+
 class Validator {
   static String? validate(String? value, String fieldName) {
     if (value == null || value.trim().isEmpty) {
@@ -62,4 +63,58 @@ class Validator {
     }
     return null;
   }
+}
+
+String getGreeting() {
+  final hour = DateTime.now().hour;
+
+  if (hour >= 5 && hour < 12) {
+    return 'GOOD MORNING';
+  } else if (hour >= 12 && hour < 17) {
+    return 'GOOD AFTERNOON';
+  } else if (hour >= 17 && hour < 21) {
+    return 'GOOD EVENING';
+  } else {
+    return 'GOOD NIGHT';
+  }
+}
+
+String formatIndianNumber(int number, {bool isCurrency = false}) {
+  String numStr = number.toString();
+  if (numStr.length <= 3) return isCurrency ? '₹$numStr' : numStr;
+
+  String otherNumbers = numStr.substring(0, numStr.length - 3);
+  if (otherNumbers.isNotEmpty) {
+    otherNumbers = otherNumbers.replaceAllMapped(
+      RegExp(r'.{1,2}(?=(.{2})+(?!.))'),
+      (Match m) => '${m[0]},',
+    );
+    // Fix leading comma if it happens
+    if (!otherNumbers.contains(',')) {
+      // simple case like 1840 -> 1 and 840 -> no comma needed in otherNumbers, wait, wait...
+      otherNumbers = otherNumbers.replaceAllMapped(
+        RegExp(r'(\\d+)(?=(\\d{2})+(?!\\d))'),
+        (Match m) => '${m[1]},',
+      );
+    } else {
+      otherNumbers = otherNumbers.replaceAllMapped(
+        RegExp(r'(\\d{1,2})(?=(\\d{2})+(?!\\d))'),
+        (Match m) => '${m[1]},',
+      );
+    }
+  }
+
+  // Easier alternative for Indian format:
+  String result = "";
+  int count = 0;
+  for (int i = numStr.length - 1; i >= 0; i--) {
+    result = numStr[i] + result;
+    count++;
+    if (count == 3 && i != 0) {
+      result = ',$result';
+    } else if (count > 3 && (count - 3) % 2 == 0 && i != 0) {
+      result = ',$result';
+    }
+  }
+  return isCurrency ? '₹$result' : result;
 }

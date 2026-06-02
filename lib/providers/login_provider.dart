@@ -5,20 +5,16 @@ import '../constants/constant.dart';
 import '../utils/api_service.dart';
 
 class LoginState {
-  final bool obscurePassword;
   final bool isLoading;
 
   const LoginState({
-    this.obscurePassword = true,
     this.isLoading = false,
   });
 
   LoginState copyWith({
-    bool? obscurePassword,
     bool? isLoading,
   }) {
     return LoginState(
-      obscurePassword: obscurePassword ?? this.obscurePassword,
       isLoading: isLoading ?? this.isLoading,
     );
   }
@@ -26,30 +22,26 @@ class LoginState {
 
 class LoginViewModel extends Notifier<LoginState> {
 
-  final phoneController = TextEditingController();
-  final passwordController = TextEditingController();
+  final phoneNumber = TextEditingController();
 
-  final phoneFocus = FocusNode();
-  final passwordFocus = FocusNode();
+  final phoneNumberFocus = FocusNode();
 
   final ApiService apiService = ApiService();
 
   @override
   LoginState build() {
     ref.onDispose(() {
-      phoneController.dispose();
-      passwordController.dispose();
-      phoneFocus.dispose();
-      passwordFocus.dispose();
+      phoneNumber.dispose();
+      phoneNumberFocus.dispose();
     });
 
     return const LoginState();
   }
 
-  void togglePasswordVisibility() {
-    state = state.copyWith(
-      obscurePassword: !state.obscurePassword,
-    );
+
+  void clear() {
+    phoneNumber.clear();
+    state = const LoginState();
   }
 
 
@@ -59,19 +51,21 @@ class LoginViewModel extends Notifier<LoginState> {
       state = state.copyWith(isLoading: true);
 
       final response = await apiService.loginPostAPI(
-        phone: phoneController.text.trim(),
-        password: passwordController.text.trim(),
+        phone: phoneNumber.text.trim(),
       );
 
       if (response["success"] == true) {
-        final token = response["data"]["token"];
+      /*  final token = response["data"]["token"];
 
-        await StorageService.saveToken(token);
+        await StorageService.saveToken(token);*/
 
         AppToast.showSuccess(response["message"]);
 
         return true;
       } else {
+        AppToast.showError(
+          response["message"] ?? "Login failed",
+        );
         return false;
       }
     } catch (e) {
