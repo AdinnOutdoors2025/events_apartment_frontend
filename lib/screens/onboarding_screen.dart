@@ -35,7 +35,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
           children: [
@@ -173,15 +173,15 @@ class OnboardingContent extends StatelessWidget {
             width: 40,
           ),
         ),
-        SizedBox(height: MediaQuery.of(context).size.height * 0.13),
+        SizedBox(height: MediaQuery.of(context).size.height * 0.06),
         Image.asset(
           index == 0
               ? AppImages.onBoarding1
               : index == 1
               ? AppImages.onBoarding2
               : AppImages.onBoarding3,
-          height: MediaQuery.of(context).size.height * 0.3,
-          fit: BoxFit.cover,
+          height: MediaQuery.of(context).size.height * 0.35,
+          fit: BoxFit.fill,
           width: double.infinity,
         ),
         SizedBox(height: MediaQuery.of(context).size.height * 0.08),

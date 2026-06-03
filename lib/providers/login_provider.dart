@@ -55,11 +55,12 @@ class LoginViewModel extends Notifier<LoginState> {
       );
 
       if (response["success"] == true) {
-      /*  final token = response["data"]["token"];
 
-        await StorageService.saveToken(token);*/
-
-        AppToast.showSuccess(response["message"]);
+        print(response["message"]);
+        print(response["testOtp"]);
+        AppToast.showSuccess(
+          '${response["message"]} and your test Otp is ${response['testOtp']}',
+        );
 
         return true;
       } else {

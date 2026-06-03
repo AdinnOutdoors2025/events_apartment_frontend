@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:apartment_client_app/models/otp_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../constants/constant.dart';
@@ -69,52 +70,62 @@ class OtpViewModel extends Notifier<OtpState> {
     });
   }
 
-  Future<void> resendOtp() async {
+  Future<void> resendOtp(String? otpType) async {
     if (!state.canResend) return;
 
     try {
       state = state.copyWith(isResending: true);
 
-      /// Call your resend OTP API
-      /* await apiService.verifyOtpPostAPI(
-        phone: phoneNumber, otp: '',
-      );*/
-      ref.read(otpViewModelProvider.notifier).startResendTimer();
+      otpCode = '';
+      final response = await apiService.resendOtpPostAPI(
+        phone: phoneNumber,
+        api: otpType == 'login' ? '/user/resend-login-otp' : '/user/resend-otp',
+      );
 
-      AppToast.showSuccess("OTP resent successfully");
-
-      startResendTimer();
+      if (response["success"] == true) {
+        print(response["message"]);
+        print(response["testOtp"]);
+        AppToast.showSuccess(
+          '${response["message"]} and your test Otp is ${response['testOtp']}' ??
+              "OTP sent successfully",
+        );
+        startResendTimer();
+        return;
+      } else {
+        print(response["message"]);
+        AppToast.showError(response["message"] ?? "Registration failed");
+        return;
+      }
     } catch (e) {
+      print(e.toString());
       AppToast.showError(e.toString());
     } finally {
       state = state.copyWith(isResending: false);
     }
   }
 
-  Future<bool> verifyOtp() async {
+  Future<OTPVerify?> verifyOtp(String otpType, int? customerType) async {
     try {
       state = state.copyWith(isLoading: true);
 
       final response = await apiService.verifyOtpPostAPI(
         phone: phoneNumber,
         otp: otpCode,
+        customerType: customerType,
+        api: otpType == 'login' ? '/user/login-verify' : '/user/verify-otp',
       );
 
-      if (response["success"] == true) {
-        /*  final token = response["data"]["token"];
+      if (response.success == true) {
+        await StorageService.saveToken(response.token!);
+        await StorageService.saveId(response.user!.sId!);
 
-        await StorageService.saveToken(token);*/
+        AppToast.showSuccess(response.message ?? '');
 
-        AppToast.showSuccess(response["message"]);
-
-        return true;
-      } else {
-        AppToast.showError(response["message"] ?? "Login failed");
-        return false;
+        return response;
       }
-    } catch (e) {
-      AppToast.showError(e.toString());
-      return false;
+
+      AppToast.showError(response.message ?? "Login failed");
+      return null;
     } finally {
       state = state.copyWith(isLoading: false);
     }

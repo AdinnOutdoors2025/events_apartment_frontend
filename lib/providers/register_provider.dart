@@ -73,17 +73,19 @@ class RegisterViewModel extends Notifier<RegisterState> {
       );
 
       if (response["success"] == true) {
+        print(response["message"]);
+        print(response["testOtp"]);
         AppToast.showSuccess(
-          response["message"] ?? "Registration successful",
+          '${response["message"]} and your test Otp is ${response['testOtp']}',
         );
         return true;
       } else {
-        AppToast.showError(
-          response["message"] ?? "Registration failed",
-        );
+        print(response["message"]);
+        AppToast.showError(response["message"] ?? "Registration failed");
         return false;
       }
     } catch (e) {
+      print(e.toString());
       AppToast.showError(e.toString());
       return false;
     } finally {

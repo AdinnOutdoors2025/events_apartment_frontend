@@ -146,8 +146,6 @@ class RegisterForm extends ConsumerStatefulWidget {
 class _RegisterFormState extends ConsumerState<RegisterForm> {
   final _formKey = GlobalKey<FormState>();
 
-  bool obscurePassword = true;
-
   @override
   Widget build(BuildContext context) {
     return Form(
@@ -160,6 +158,17 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
             hintText: "Full name",
             controller: widget.viewModel.nameController,
             focusNode: widget.viewModel.nameFocus,
+            validator: (value) {
+              if (value == null || value.trim().isEmpty) {
+                return "Name is required";
+              }
+
+              if (value.trim().length < 3) {
+                return "Enter a valid name";
+              }
+
+              return null;
+            },
           ),
 
           const SizedBox(height: 12),
@@ -171,6 +180,17 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
             keyboardType: TextInputType.phone,
             controller: widget.viewModel.phoneController,
             focusNode: widget.viewModel.phoneFocus,
+            validator: (value) {
+              if (value == null || value.trim().isEmpty) {
+                return "Phone number is required";
+              }
+
+              if (!RegExp(r'^[6-9]\d{9}$').hasMatch(value.trim())) {
+                return "Enter a valid 10 digit mobile number";
+              }
+
+              return null;
+            },
           ),
 
           const SizedBox(height: 12),
@@ -182,6 +202,19 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
             keyboardType: TextInputType.emailAddress,
             controller: widget.viewModel.emailController,
             focusNode: widget.viewModel.emailFocus,
+            validator: (value) {
+              if (value == null || value.trim().isEmpty) {
+                return null;
+              }
+
+              if (!RegExp(
+                r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+              ).hasMatch(value.trim())) {
+                return "Enter a valid email";
+              }
+
+              return null;
+            },
           ),
 
           const SizedBox(height: 18),
@@ -245,6 +278,9 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
                       'phoneNumber': widget.viewModel.phoneController.text
                           .trim(),
                       'otpType': 'register',
+                      'customerType': widget.state.selectedRole == "Brand Owner"
+                          ? 1
+                          : 2,
                     },
                   );
                 }

@@ -1,7 +1,9 @@
+import 'package:apartment_client_app/models/otp_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pinput/pinput.dart';
 import '../constants/color.dart';
+import '../constants/constant.dart';
 import '../providers/otp_provider.dart';
 
 class OtpPage extends ConsumerWidget {
@@ -13,6 +15,7 @@ class OtpPage extends ConsumerWidget {
         ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>;
     final phoneNumber = arguments['phoneNumber'] as String?;
     final otpType = arguments['otpType'] as String?;
+    final customerType = arguments['customerType'] as int?;
 
     final state = ref.watch(otpViewModelProvider);
     final viewModel = ref.read(otpViewModelProvider.notifier);
@@ -127,7 +130,12 @@ class OtpPage extends ConsumerWidget {
 
                 const SizedBox(height: 24),
 
-                OtpForm(state: state, viewModel: viewModel),
+                OtpForm(
+                  state: state,
+                  viewModel: viewModel,
+                  otpType: otpType,
+                  customerType: customerType,
+                ),
               ],
             ),
           ),
@@ -140,8 +148,16 @@ class OtpPage extends ConsumerWidget {
 class OtpForm extends StatelessWidget {
   final OtpState state;
   final OtpViewModel viewModel;
+  final String? otpType;
+  final int? customerType;
 
-  const OtpForm({super.key, required this.state, required this.viewModel});
+  const OtpForm({
+    super.key,
+    required this.state,
+    required this.viewModel,
+    required this.otpType,
+    this.customerType,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -179,7 +195,7 @@ class OtpForm extends StatelessWidget {
                 onPressed: state.isResending
                     ? null
                     : () {
-                        viewModel.resendOtp();
+                        viewModel.resendOtp(otpType);
                       },
                 child: state.isResending
                     ? const SizedBox(
@@ -209,8 +225,31 @@ class OtpForm extends StatelessWidget {
           width: double.infinity,
           height: 52,
           child: ElevatedButton(
-            onPressed: () {
-              Navigator.pushReplacementNamed(context, '/brandDetails');
+            onPressed: () async {
+              if (viewModel.otpCode.trim().length != 4) {
+                AppToast.showSuccess('Please enter a valid 4-digit OTP');
+                return;
+              }
+
+              final response = await viewModel.verifyOtp(
+                otpType ?? '',
+                customerType,
+              );
+
+              if (response != null && context.mounted) {
+                final profileCompleted = response.user?.profileCompleted;
+                final customerType = response.user?.customerType;
+
+                Navigator.pushReplacementNamed(
+                  context,
+                  otpType == 'register'
+                      ? '/brandDetails'
+                      : (profileCompleted == 0 || profileCompleted == 1)
+                      ? '/brandDetails'
+                      : '/bottomNav',
+                  arguments: customerType,
+                );
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.black,

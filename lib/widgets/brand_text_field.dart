@@ -16,9 +16,10 @@ Widget buildLabel(String text) {
   );
 }
 
-Widget buildTextField(String hint, {ValueChanged<String>? onChanged}) {
+Widget buildTextField(String hint, {ValueChanged<String>? onChanged, suffixIcon}) {
   return TextField(
-    decoration: InputDecoration(
+
+    decoration: InputDecoration(suffixIcon: suffixIcon,
       hintText: hint,
       hintStyle: GoogleFonts.inter(color: Colors.grey[600], fontSize: 14),
       filled: true,

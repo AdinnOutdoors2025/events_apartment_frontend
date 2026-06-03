@@ -11,21 +11,23 @@ class BrandInfoScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final form = ref.watch(brandFormProvider);
+    final customerType = ModalRoute.of(context)?.settings.arguments as int?;
 
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         elevation: 0,
         centerTitle: true,
+        automaticallyImplyLeading: false,
         backgroundColor: Colors.white,
         title: const Text(
-          "Sign In",
+          "Personal Details",
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.w500),
         ),
-        leading: IconButton(
+       /* leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {},
-        ),
+        ),*/
         actions: [
           TextButton(
             onPressed: () {
@@ -34,6 +36,7 @@ class BrandInfoScreen extends ConsumerWidget {
             child: Text(
               'Skip',
               style: GoogleFonts.inter(
+                fontSize: 13,
                 color: Colors.grey[600],
                 fontWeight: FontWeight.w500,
               ),
@@ -71,7 +74,9 @@ class BrandInfoScreen extends ConsumerWidget {
                 const SizedBox(height: 10),
 
                 Text(
-                  "Tell us about your brand",
+                  customerType == 1
+                      ? "Tell us about your brand"
+                      : 'Tell us about your agency',
                   style: GoogleFonts.inter(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -82,42 +87,105 @@ class BrandInfoScreen extends ConsumerWidget {
 
                 const SizedBox(height: 30),
 
-                buildLabel('BRAND OWNER NAME'),
+                buildLabel(
+                  customerType == 1 ? 'BRAND OWNER NAME' : 'Agency Owner Name',
+                ),
                 buildTextField(
-                  'Rahul Iyer',
+                  'Rahul',
                   onChanged: (v) =>
                       ref.read(brandFormProvider.notifier).updateOwnerName(v),
                 ),
                 const SizedBox(height: 24),
 
-                buildLabel('COMPANY / BRAND NAME'),
-                buildTextField('Acme Mobility Pvt. Ltd.',onChanged: (v) =>
-                    ref.read(brandFormProvider.notifier).updateCompanyName(v),),
+                buildLabel(customerType == 1 ? 'BRAND NAME' : 'Agency Name'),
+                buildTextField(
+                  'Adinn Pvt. Ltd.',
+                  onChanged: (v) =>
+                      ref.read(brandFormProvider.notifier).updateCompanyName(v),
+                ),
                 const SizedBox(height: 24),
 
                 buildLabel('EMAIL'),
-                buildTextField('rahul@acme.com',onChanged: (v) =>
-                    ref.read(brandFormProvider.notifier).updateEmail(v),),
+                buildTextField(
+                  'rahul@acme.com',
+                  onChanged: (v) =>
+                      ref.read(brandFormProvider.notifier).updateEmail(v),
+                ),
                 const SizedBox(height: 24),
 
-                buildLabel('GST (OPTIONAL)'),
-                buildTextField('33ABCDE1234F1Z5',onChanged: (v) =>
-                    ref.read(brandFormProvider.notifier).updateGst(v),),
+                buildLabel('GST NUMBER (OPTIONAL)'),
+
+                buildTextField(
+                  '33ABCDE1234F1Z5',
+                  onChanged: (v) =>
+                      ref.read(brandFormProvider.notifier).updateGst(v),
+                  suffixIcon: form.gst.length == 15
+                      ? form.isGstVerified
+                            ? const Icon(
+                                Icons.check_circle,
+                                color: Colors.green,
+                              )
+                            : TextButton(
+                                onPressed: form.isGstVerifying
+                                    ? null
+                                    : () {
+                                          ref
+                                            .read(brandFormProvider.notifier)
+                                            .verifyGst();
+                                      },
+                                child: form.isGstVerifying
+                                    ? const SizedBox(
+                                        height: 18,
+                                        width: 18,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                    : const Text("Verify"),
+                              )
+                      : null,
+                ),
+                const SizedBox(height: 14),
+                if (form.isGstVerified) ...[
+                  const SizedBox(height: 12),
+
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.green.shade50,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.green.shade200),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          form.businessName,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+
+                        const SizedBox(height: 4),
+
+                        Text(form.businessAddress),
+                      ],
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 24),
 
                 SizedBox(
                   width: double.infinity,
                   height: 56,
                   child: ElevatedButton(
-                    onPressed: /*form.isValid
-                        ?*/ () {
-                      /* debugPrint(form.ownerName);
+                    onPressed: form.isValid
+                        ? () {
+                            debugPrint(form.ownerName);
                             debugPrint(form.companyName);
                             debugPrint(form.email);
-                            debugPrint(form.gst);*/
-                      Navigator.pushNamed(context, '/brandProfile');
-                    },
-                    /*: null*/
+                            debugPrint(form.gst);
+                            Navigator.pushNamed(context, '/brandProfile',arguments: customerType);
+                          }
+                        : null,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.black,
                       foregroundColor: Colors.white,
@@ -128,7 +196,10 @@ class BrandInfoScreen extends ConsumerWidget {
                     ),
                     child: const Text(
                       "Continue",
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ),

@@ -1,32 +1,48 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 
+import '../providers/brand_form_provider.dart';
 import '../widgets/brand_text_field.dart';
 
-class BrandProfileScreen extends StatefulWidget {
+class BrandProfileScreen extends ConsumerStatefulWidget {
   const BrandProfileScreen({super.key});
 
   @override
-  State<BrandProfileScreen> createState() => _BrandProfileScreenState();
+  ConsumerState<BrandProfileScreen> createState() => _BrandProfileScreenState();
 }
 
-class _BrandProfileScreenState extends State<BrandProfileScreen> {
+class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
   String selectedIndustry = 'Automobile';
   String selectedGoal = 'Lead Generation';
 
   final List<String> industries = [
-    'Real Estate', 'Automobile', 'FMCG', 'Food & Beverage',
-    'Education', 'Healthcare', 'Finance', 'Fashion',
-    'Electronics', 'Other'
+    'Real Estate',
+    'Automobile',
+    'FMCG',
+    'Food & Beverage',
+    'Education',
+    'Healthcare',
+    'Finance',
+    'Fashion',
+    'Electronics',
+    'Other',
   ];
 
   final List<String> goals = [
-    'Brand Awareness', 'Lead Generation', 'Spot Sales',
-    'Product Sampling', 'Festival Promotion'
+    'Brand Awareness',
+    'Lead Generation',
+    'Spot Sales',
+    'Product Sampling',
+    'Festival Promotion',
   ];
 
   @override
   Widget build(BuildContext context) {
+    final customerType = ModalRoute.of(context)?.settings.arguments as int?;
+    final form = ref.watch(brandFormProvider);
+    final notifier = ref.read(brandFormProvider.notifier);
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
@@ -37,7 +53,7 @@ class _BrandProfileScreenState extends State<BrandProfileScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Brand Profile',
+          customerType == 1 ? 'Brand Profile' : 'Agency Profile',
           style: GoogleFonts.inter(
             color: Colors.black,
             fontSize: 16,
@@ -76,7 +92,9 @@ class _BrandProfileScreenState extends State<BrandProfileScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Set up your brand profile',
+              customerType == 1
+                  ? 'Set up your brand profile'
+                  : 'Set up your agency profile',
               style: GoogleFonts.inter(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -85,55 +103,101 @@ class _BrandProfileScreenState extends State<BrandProfileScreen> {
               ),
             ),
             const SizedBox(height: 24),
-            
+
             // Upload Logo
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.grey[300]!),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[100],
-                      borderRadius: BorderRadius.circular(12),
+            GestureDetector(
+              onTap: () => showLogoPicker(context, ref),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.grey[300]!),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 50,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[100],
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: form.logoImage != null
+                          ? Stack(
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Image.file(
+                                    form.logoImage!,
+                                    width: 50,
+                                    height: 50,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+
+                                Positioned(
+                                  right: -6,
+                                  top: -6,
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      notifier.removeLogo();
+                                    },
+                                    child: Container(
+                                      padding: const EdgeInsets.all(2),
+                                      decoration: const BoxDecoration(
+                                        color: Colors.red,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(
+                                        Icons.close,
+                                        size: 14,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            )
+                          : Icon(
+                              Icons.upload_outlined,
+                              color: Colors.grey[700],
+                            ),
                     ),
-                    child: Icon(Icons.upload_outlined, color: Colors.grey[700]),
-                  ),
-                  const SizedBox(width: 16),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Upload brand logo',
-                        style: GoogleFonts.inter(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
+
+                    const SizedBox(width: 16),
+
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          customerType == 1
+                              ? 'Upload brand logo'
+                              : 'Upload agency logo',
+                          style: GoogleFonts.inter(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'PNG / SVG - up to 2 MB',
-                        style: GoogleFonts.inter(
-                          color: Colors.grey[600],
-                          fontSize: 12,
+                        const SizedBox(height: 4),
+                        Text(
+                          'PNG / JPG - up to 2 MB',
+                          style: GoogleFonts.inter(
+                            color: Colors.grey[600],
+                            fontSize: 12,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                ],
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 24),
 
-            buildLabel('BRAND NAME'),
+            /* buildLabel('BRAND NAME'),
             buildTextField('Acme Mobility'),
-            const SizedBox(height: 24),
-
+            const SizedBox(height: 24),*/
             buildLabel('INDUSTRY CATEGORY'),
             Wrap(
               spacing: 8,
@@ -205,7 +269,66 @@ class _BrandProfileScreenState extends State<BrandProfileScreen> {
     );
   }
 
-  Widget _buildChip({required String label, required bool isSelected, required VoidCallback onTap}) {
+  void showLogoPicker(BuildContext context, WidgetRef ref) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.black,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) {
+        return Container(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Align(
+                alignment: Alignment.topRight,
+                child: IconButton(
+                  icon: const Icon(Icons.close, color: Colors.white),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ),
+
+              ListTile(
+                leading: const Icon(Icons.camera_alt, color: Colors.white),
+                title: const Text(
+                  'Camera',
+                  style: TextStyle(color: Colors.white),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  ref
+                      .read(brandFormProvider.notifier)
+                      .pickLogo(ImageSource.camera);
+                },
+              ),
+
+              ListTile(
+                leading: const Icon(Icons.photo, color: Colors.white),
+                title: const Text(
+                  'Gallery',
+                  style: TextStyle(color: Colors.white),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  ref
+                      .read(brandFormProvider.notifier)
+                      .pickLogo(ImageSource.gallery);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildChip({
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(

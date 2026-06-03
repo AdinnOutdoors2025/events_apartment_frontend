@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class StorageService {
   static const String tokenKey = "jwt_token";
+  static const String idKey = "jwt_token";
 
   /// Save Token
   static Future<void> saveToken(String token) async {
@@ -22,6 +23,21 @@ class StorageService {
   static Future<void> clearToken() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(tokenKey);
+  }
+
+  static Future<void> saveId(String id) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(idKey, id);
+  }
+
+  static Future<String?> getId() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(idKey);
+  }
+
+  static Future<void> clearId() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(idKey);
   }
 
   /// Clear All Storage

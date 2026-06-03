@@ -1,3 +1,5 @@
+import 'package:apartment_client_app/models/gst_verification_model.dart';
+import 'package:apartment_client_app/models/otp_model.dart';
 import 'package:dio/dio.dart';
 
 class ApiService {
@@ -6,7 +8,7 @@ class ApiService {
   ApiService() {
     _dio = Dio(
       BaseOptions(
-        baseUrl: 'http://localhost:5000',
+        baseUrl: 'http://192.168.0.2:5000',
         connectTimeout: const Duration(seconds: 30),
         receiveTimeout: const Duration(seconds: 30),
         headers: {
@@ -17,23 +19,17 @@ class ApiService {
     );
   }
 
-  Future<Map<String, dynamic>> loginPostAPI({
-    required String phone,
-  }) async {
+  Future<Map<String, dynamic>> loginPostAPI({required String phone}) async {
     try {
       final response = await _dio.post(
         '/user/login',
-        data: {
-          'userPhone': phone,
-        },
+        data: {'userPhone': phone},
       );
 
       return response.data;
     } on DioException catch (e) {
       final message =
-          e.response?.data?['message'] ??
-              e.message ??
-              'Something went wrong';
+          e.response?.data?['message'] ?? e.message ?? 'Something went wrong';
 
       throw Exception(message);
     } catch (e) {
@@ -48,6 +44,9 @@ class ApiService {
     String? email,
   }) async {
     try {
+      print('userName: $name');
+      print('userPhone: $phone');
+      print('customerType: $customerType');
       final response = await _dio.post(
         '/user/register',
         data: {
@@ -67,22 +66,73 @@ class ApiService {
     }
   }
 
-  Future<Map<String, dynamic>> verifyOtpPostAPI({
+  Future<OTPVerify> verifyOtpPostAPI({
     required String phone,
     required String otp,
+    required String api,
+    int? customerType,
   }) async {
+    print('otp: $otp');
+    print('api: $api');
+    print('userPhone: $phone');
+    print('customerType: $customerType');
     try {
       final response = await _dio.post(
-        '/user/verify-otp',
+        api,
         data: {
           'userPhone': phone,
           'otp': otp,
+          if (customerType != null && customerType.toString().isNotEmpty)
+            'customerType': customerType,
         },
       );
+      print(response.realUri);
+      return OTPVerify.fromJson(response.data);
+    } on DioException catch (e) {
+      final message =
+          e.response?.data?['message'] ??
+          e.message ??
+          'OTP verification failed';
+      throw Exception(message);
+    } catch (e) {
+      throw Exception('API Error: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>> resendOtpPostAPI({
+    required String phone,
+    required String api,
+  }) async {
+    try {
+      final response = await _dio.post(api, data: {'userPhone': phone});
+      print(response.realUri);
+
       return response.data;
     } on DioException catch (e) {
       final message =
-          e.response?.data?['message'] ?? e.message ?? 'OTP verification failed';
+          e.response?.data?['message'] ??
+          e.message ??
+          'OTP verification failed';
+      throw Exception(message);
+    } catch (e) {
+      throw Exception('API Error: $e');
+    }
+  }
+
+  Future<GstVerification> gstVerify(String? gstNumber) async {
+    try {
+      final response = await _dio.post(
+        '/gstdetails/verify',
+        data: GstVerification(gstNumber: gstNumber).toJson(),
+      );
+      print(response.realUri);
+
+      return GstVerification.fromJson(response.data);
+    } on DioException catch (e) {
+      final message =
+          e.response?.data?['message'] ??
+          e.message ??
+          'GST verification failed';
       throw Exception(message);
     } catch (e) {
       throw Exception('API Error: $e');
