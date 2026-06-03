@@ -1,6 +1,11 @@
+import 'package:apartment_client_app/constants/constant.dart';
 import 'package:apartment_client_app/models/gst_verification_model.dart';
 import 'package:apartment_client_app/models/otp_model.dart';
 import 'package:dio/dio.dart';
+
+import '../models/profile_model.dart';
+import '../providers/brand_form_provider.dart';
+import 'package:path/path.dart' as path;
 
 class ApiService {
   late final Dio _dio;
@@ -63,6 +68,77 @@ class ApiService {
       throw Exception(message);
     } catch (e) {
       throw Exception('API Error: $e');
+    }
+  }
+
+  Future<ProfileModel> saveProfile(
+    BrandFormState state,
+    int profileCompleted,
+  ) async {
+    try {
+      final id = StorageService.getId();
+      final token = await StorageService.getToken();
+
+      FormData formData = FormData.fromMap({
+        'id': id,
+        "brandOwnerName": state.ownerName,
+        "companyBrandName": state.companyName,
+        "email": state.email,
+        "gstNumber": state.gst,
+        "industryCategory": state.selectedIndustry,
+        "productServiceDescription": state.productDescription,
+        "targetCustomer": state.targetCustomer,
+        "averageProductPrice": state.avgProductPrice,
+        "campaignGoal": state.selectedCampaignGoal,
+        "businessName": state.businessName,
+        "businessAddress": state.businessAddress,
+        "profileCompleted ": profileCompleted,
+      });
+
+      if (state.logoImage != null) {
+        formData.files.add(
+          MapEntry(
+            "logo",
+            await MultipartFile.fromFile(
+              state.logoImage!.path,
+              filename: path.basename(state.logoImage!.path),
+            ),
+          ),
+        );
+      }
+
+      final response = await _dio.post(
+        "/user/profile-save",
+        data: formData,
+        options: Options(
+          headers: {
+            "Content-Type": "multipart/form-data",
+            "Authorization": "Bearer $token",
+          },
+        ),
+      );
+
+      return ProfileModel.fromJson(response.data);
+    } on DioException catch (e) {
+      throw Exception(e.response?.data?['message'] ?? "Profile save failed");
+    }
+  }
+
+  Future<ProfileModel> skipProfile() async {
+    try {
+      final token = await StorageService.getToken();
+      final response = await _dio.post(
+        options: Options(headers: {"Authorization": "Bearer $token"}),
+        "/user/profile-save",
+        data: {"profileCompleted": 0},
+      );
+
+      print(response.data);
+
+      return ProfileModel.fromJson(response.data);
+    } on DioException catch (e) {
+      print(e.toString());
+      throw Exception(e.response?.data?['message'] ?? "Profile save failed");
     }
   }
 

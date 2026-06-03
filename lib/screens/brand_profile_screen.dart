@@ -1,3 +1,4 @@
+import 'package:apartment_client_app/utils/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -14,9 +15,6 @@ class BrandProfileScreen extends ConsumerStatefulWidget {
 }
 
 class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
-  String selectedIndustry = 'Automobile';
-  String selectedGoal = 'Lead Generation';
-
   final List<String> industries = [
     'Real Estate',
     'Automobile',
@@ -63,8 +61,12 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
         centerTitle: true,
         actions: [
           TextButton(
-            onPressed: () {
-              Navigator.pushReplacementNamed(context, '/bottomNav');
+            onPressed: () async {
+              final response = await ApiService().skipProfile();
+
+              if (response.success == true && context.mounted) {
+                Navigator.pushReplacementNamed(context, '/bottomNav');
+              }
             },
             child: Text(
               'Skip',
@@ -125,6 +127,7 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
                       ),
                       child: form.logoImage != null
                           ? Stack(
+                              clipBehavior: Clip.none,
                               children: [
                                 ClipRRect(
                                   borderRadius: BorderRadius.circular(12),
@@ -137,21 +140,21 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
                                 ),
 
                                 Positioned(
-                                  right: -6,
                                   top: -6,
+                                  right: -6,
                                   child: GestureDetector(
                                     onTap: () {
                                       notifier.removeLogo();
                                     },
                                     child: Container(
-                                      padding: const EdgeInsets.all(2),
+                                      padding: const EdgeInsets.all(3),
                                       decoration: const BoxDecoration(
                                         color: Colors.red,
                                         shape: BoxShape.circle,
                                       ),
                                       child: const Icon(
                                         Icons.close,
-                                        size: 14,
+                                        size: 12,
                                         color: Colors.white,
                                       ),
                                     ),
@@ -205,8 +208,10 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
               children: industries.map((industry) {
                 return _buildChip(
                   label: industry,
-                  isSelected: selectedIndustry == industry,
-                  onTap: () => setState(() => selectedIndustry = industry),
+                  isSelected: form.selectedIndustry == industry,
+                  onTap: () {
+                    notifier.setIndustry(industry);
+                  },
                 );
               }).toList(),
             ),
@@ -231,8 +236,10 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
               children: goals.map((goal) {
                 return _buildChip(
                   label: goal,
-                  isSelected: selectedGoal == goal,
-                  onTap: () => setState(() => selectedGoal = goal),
+                  isSelected: form.selectedCampaignGoal == goal,
+                  onTap: () {
+                    notifier.setCampaignRole(goal);
+                  },
                 );
               }).toList(),
             ),
@@ -242,9 +249,16 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {
-                  Navigator.pushReplacementNamed(context, '/bottomNav');
-                },
+                onPressed: form.canSubmit
+                    ? () async {
+                        final success = await ref
+                            .read(brandFormProvider.notifier)
+                            .saveProfile();
+                        if (success && context.mounted) {
+                          Navigator.pushReplacementNamed(context, '/bottomNav');
+                        }
+                      }
+                    : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.black,
                   foregroundColor: Colors.white,

@@ -6,6 +6,8 @@ import 'package:image_picker/image_picker.dart';
 import '../constants/constant.dart';
 import '../utils/api_service.dart';
 
+const _unset = Object();
+
 class BrandFormState {
   final bool isLoading;
   final String ownerName;
@@ -18,6 +20,12 @@ class BrandFormState {
   final String businessName;
   final String businessAddress;
   final File? logoImage;
+  final String productDescription;
+  final String targetCustomer;
+  final int avgProductPrice;
+  final String selectedIndustry;
+  final String selectedCampaignGoal;
+
 
   const BrandFormState({
     this.isLoading = false,
@@ -29,8 +37,15 @@ class BrandFormState {
     this.isGstVerified = false,
     this.businessName = '',
     this.businessAddress = '',
-    this.logoImage ,
+    this.logoImage,
+    this.productDescription = '',
+    this.targetCustomer = '',
+    this.avgProductPrice = 0,
+    this.selectedIndustry = '',
+    this.selectedCampaignGoal = '',
   });
+
+
 
   BrandFormState copyWith({
     bool? isLoading,
@@ -42,7 +57,12 @@ class BrandFormState {
     bool? isGstVerified,
     String? businessName,
     String? businessAddress,
-    File? logoImage,
+    Object? logoImage = _unset,
+    String? productDescription,
+    String? targetCustomer,
+    int? avgProductPrice,
+    String? selectedIndustry,
+    String? selectedCampaignGoal,
   }) {
     return BrandFormState(
       isLoading: isLoading ?? this.isLoading,
@@ -54,7 +74,14 @@ class BrandFormState {
       isGstVerified: isGstVerified ?? this.isGstVerified,
       businessName: businessName ?? this.businessName,
       businessAddress: businessAddress ?? this.businessAddress,
-      logoImage: logoImage ?? this.logoImage,
+      logoImage: logoImage == _unset
+          ? this.logoImage
+          : logoImage as File?,
+      productDescription: productDescription ?? this.productDescription,
+      targetCustomer: targetCustomer ?? this.targetCustomer,
+      avgProductPrice: avgProductPrice ?? this.avgProductPrice,
+      selectedIndustry: selectedIndustry ?? this.selectedIndustry,
+      selectedCampaignGoal: selectedCampaignGoal ?? this.selectedCampaignGoal,
     );
   }
 
@@ -69,6 +96,24 @@ class BrandFormState {
 
     return isGstVerified;
   }
+
+  bool get canSubmit {
+
+    final industryValid = selectedIndustry.trim().isNotEmpty;
+    final productValid = productDescription.trim().isNotEmpty;
+    final targetValid = targetCustomer.trim().isNotEmpty;
+    final campaignValid = selectedCampaignGoal.trim().isNotEmpty;
+    final priceValid = avgProductPrice > 0;
+    final logoValid = logoImage != null;
+
+    return
+        industryValid &&
+        productValid &&
+        targetValid &&
+        campaignValid &&
+        priceValid &&
+        logoValid;
+  }
 }
 
 class BrandFormNotifier extends StateNotifier<BrandFormState> {
@@ -79,7 +124,29 @@ class BrandFormNotifier extends StateNotifier<BrandFormState> {
   void updateOwnerName(String value) {
     state = state.copyWith(ownerName: value);
   }
+
+  void updateProductDescription(String value) {
+    state = state.copyWith(productDescription: value);
+  }
+
+  void setIndustry(String role) {
+    state = state.copyWith(selectedIndustry: role);
+  }
+
+  void setCampaignRole(String role) {
+    state = state.copyWith(selectedCampaignGoal: role);
+  }
+
+  void updateTargetCustomer(String value) {
+    state = state.copyWith(targetCustomer: value);
+  }
+
+  void updateAvgProductPrice(int value) {
+    state = state.copyWith(avgProductPrice: value);
+  }
+
   void removeLogo() {
+    print('remove');
     state = state.copyWith(logoImage: null);
   }
 
@@ -98,6 +165,27 @@ class BrandFormNotifier extends StateNotifier<BrandFormState> {
       businessName: '',
       businessAddress: '',
     );
+  }
+
+  Future<bool> saveProfile() async {
+    try {
+      state = state.copyWith(isLoading: true);
+
+      final response = await apiService.saveProfile(state,2);
+
+      if (response.success == true) {
+        AppToast.showSuccess(response.message ?? "Profile saved");
+        return true;
+      } else {
+        AppToast.showError(response.message ?? "Failed");
+        return false;
+      }
+    } catch (e) {
+      AppToast.showError(e.toString());
+      return false;
+    } finally {
+      state = state.copyWith(isLoading: false);
+    }
   }
 
   Future<bool> verifyGst() async {
@@ -140,6 +228,7 @@ class BrandFormNotifier extends StateNotifier<BrandFormState> {
       state = state.copyWith(isGstVerifying: false);
     }
   }
+
   Future<void> pickLogo(ImageSource source) async {
     final XFile? image = await _picker.pickImage(
       source: source,
@@ -147,9 +236,7 @@ class BrandFormNotifier extends StateNotifier<BrandFormState> {
     );
 
     if (image != null) {
-      state = state.copyWith(
-        logoImage: File(image.path),
-      );
+      state = state.copyWith(logoImage: File(image.path));
     }
   }
 }
