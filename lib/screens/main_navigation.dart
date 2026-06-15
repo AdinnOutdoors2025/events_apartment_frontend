@@ -1,10 +1,12 @@
 import 'package:apartment_client_app/providers/main_navigation_provider.dart';
+import 'package:apartment_client_app/constants/constant.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'home_screen.dart';
 import 'spaces_screen.dart';
+import 'campaigns_screen.dart';
 
 class MainNavigation extends ConsumerWidget {
   const MainNavigation({super.key});
@@ -15,9 +17,9 @@ class MainNavigation extends ConsumerWidget {
     final List<Widget> screens = [
       const HomeScreen(),
       const SpacesScreen(),
-      const Scaffold(body: Center(child: Text("Campaigns"))),
+      const CampaignsScreen(),
       const Scaffold(body: Center(child: Text("Insights"))),
-      const Scaffold(body: Center(child: Text("Account"))),
+      _buildAccountScreen(context, ref),
     ];
 
     final List<Map<String, dynamic>> navItems = [
@@ -50,8 +52,8 @@ class MainNavigation extends ConsumerWidget {
 
       bottomNavigationBar: SafeArea(
         child: Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 1),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(40),
@@ -72,6 +74,10 @@ class MainNavigation extends ConsumerWidget {
               return GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 onTap: () {
+                  if (index == 1) {
+                    ref.read(showSpacesBackButtonProvider.notifier).state =
+                        false;
+                  }
                   ref.read(bottomNavigationIndex.notifier).state = index;
                 },
                 child: AnimatedContainer(
@@ -107,6 +113,107 @@ class MainNavigation extends ConsumerWidget {
                 ),
               );
             }),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAccountScreen(BuildContext context, WidgetRef ref) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8F9FA),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFFF8F9FA),
+        elevation: 0,
+        title: Text(
+          'Account',
+          style: GoogleFonts.inter(
+            color: Colors.black,
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        centerTitle: true,
+      ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+          child: Column(
+            children: [
+              const SizedBox(height: 20),
+              // Profile Card Mockup
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.grey.shade200),
+                ),
+                child: Column(
+                  children: [
+                    CircleAvatar(
+                      radius: 40,
+                      backgroundColor: Colors.grey.shade200,
+                      child: const Icon(
+                        Icons.person,
+                        size: 40,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Welcome to Events App',
+                      style: GoogleFonts.inter(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Manage your account settings here',
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 30),
+              // Logout Button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () async {
+                    await StorageService.clearAll();
+                    if (context.mounted) {
+                      Navigator.pushNamedAndRemoveUntil(
+                        context,
+                        '/login',
+                        (route) => false,
+                      );
+                    }
+                  },
+                  icon: const Icon(Icons.logout),
+                  label: Text(
+                    'Logout',
+                    style: GoogleFonts.inter(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFE5212A),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24.0),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),

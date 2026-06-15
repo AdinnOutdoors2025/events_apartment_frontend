@@ -14,4 +14,7 @@ class AppImages{
   static  String onBoarding2 = 'assets/images/onboarding_2.png';
   static  String onBoarding3 = 'assets/images/onboarding_3.png';
   static  String loginAsset = 'assets/images/login_asset.svg';
+  static  String loginAssets = 'assets/images/login_assets.png';
+  static  String apartmentPortrait = 'assets/images/apartment_portrait.png';
+  static  String apartmentLandscape = 'assets/images/apartment_landscape.png';
 }

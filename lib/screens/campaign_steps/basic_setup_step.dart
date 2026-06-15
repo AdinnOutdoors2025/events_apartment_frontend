@@ -2,15 +2,36 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../models/apartment_field_list.dart';
 import '../../providers/campaign_provider.dart';
+import '../../widgets/countingContainer.dart';
 
 class BasicSetupStep extends ConsumerWidget {
-  const BasicSetupStep({super.key});
+  final ApartmentFieldsList apartmentFieldsList;
+
+  const BasicSetupStep({super.key, required this.apartmentFieldsList});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(campaignProvider);
     final viewModel = ref.read(campaignProvider.notifier);
+
+    final List<ItemsData> uncategorized = [];
+
+    final elementDetails =
+        apartmentFieldsList.data?.elementsDetails ?? <ElementsDetails>[];
+
+    for (final category in elementDetails) {
+      final items = category.itemsData ?? [];
+
+      for (final item in items) {
+        if (item.itemType == 1) {
+          uncategorized.add(item);
+        }
+      }
+    }
+
+    debugPrint('Uncategorized: ${uncategorized.length}');
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
@@ -18,7 +39,7 @@ class BasicSetupStep extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'STEP · BASIC SETUP',
+            'STEP · BRANDING & SETUP',
             style: GoogleFonts.inter(
               color: const Color(0xFFE5212A),
               fontSize: 10,
@@ -28,7 +49,7 @@ class BasicSetupStep extends ConsumerWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Define the campaign objective',
+            'Design your event presence',
             style: GoogleFonts.inter(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -38,35 +59,74 @@ class BasicSetupStep extends ConsumerWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'We\'ll suggest a setup template once you choose your campaign type.',
+            'Add canopies, counters, backdrops and signage — all priced per day, hour, square feet, feet.',
             style: GoogleFonts.inter(
               fontSize: 14,
               color: Colors.grey[600],
+              height: 1.4,
             ),
           ),
           const SizedBox(height: 32),
 
-          Text(
-            'CAMPAIGN TYPE',
-            style: GoogleFonts.inter(
-              fontSize: 10,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey[600],
-              letterSpacing: 1.0,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'SETUP ESSENTIALS',
+                style: GoogleFonts.inter(
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[600],
+                  letterSpacing: 1.0,
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 16),
-          
-          _buildObjectiveRadio('Promotion Only', 2000, state, viewModel),
-          const SizedBox(height: 12),
-          _buildObjectiveRadio('Promotion + Lead Generation', 4000, state, viewModel),
-          const SizedBox(height: 12),
-          _buildObjectiveRadio('Sales Only', 3000, state, viewModel),
+
+          ListView.separated(
+            padding: const EdgeInsets.all(5),
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: uncategorized.length,
+            separatorBuilder: (_, _) => const SizedBox(height: 16),
+            itemBuilder: (context, index) {
+              final unCategory = uncategorized[index];
+
+              return QuantityItemCard(
+                title: unCategory.itemName ?? '',
+                price: unCategory.amount ?? 0,
+                quantity: unCategory.quantity ?? 0,
+                count:
+                    state.unCategoryBrandingCounts[unCategory.itemName ?? ''] ??
+                    0,
+                unitLabel: unCategory.amountUnit == 1
+                    ? 'day'
+                    : unCategory.amountUnit == 2
+                    ? "hour"
+                    : unCategory.amountUnit == 3
+                    ? "sq.ft"
+                    : unCategory.amountUnit == 4
+                    ? 'feet'
+                    : 'piece',
+                onChanged: (delta) {
+                  viewModel.updateUnCategoryCount(
+                    unCategory.itemName ?? '',
+                    delta,
+                  );
+                },
+                priceFormatter: (price) {
+                  return '₹${price.toString()}';
+                },
+                stepName: 'unCategorized',
+              );
+            },
+          ),
 
           const SizedBox(height: 24),
 
           // Smart Suggestion
-          Container(
+          /* Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: const Color(0xFFFFF0EF),
@@ -76,7 +136,11 @@ class BasicSetupStep extends ConsumerWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.lightbulb_outline, color: Color(0xFFE5212A), size: 20),
+                const Icon(
+                  Icons.lightbulb_outline,
+                  color: Color(0xFFE5212A),
+                  size: 20,
+                ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -122,15 +186,20 @@ class BasicSetupStep extends ConsumerWidget {
 
           _buildTextField('Royal Enfield'),
           const SizedBox(height: 12),
-          _buildTextField('Promotion + Lead Generation'),
-
+          _buildTextField('Promotion + Lead Generation'),*/
           const SizedBox(height: 120),
         ],
       ),
     );
   }
 
-  Widget _buildObjectiveRadio(String title, int price, CampaignState state, CampaignViewModel viewModel) {
+  Widget _buildObjectiveRadio(
+    String title,
+    int price,
+    int amountType,
+    CampaignState state,
+    CampaignViewModel viewModel,
+  ) {
     bool isSelected = state.campaignObjective == title;
     return GestureDetector(
       onTap: () => viewModel.setObjective(title),
@@ -159,7 +228,8 @@ class BasicSetupStep extends ConsumerWidget {
               text: TextSpan(
                 children: [
                   TextSpan(
-                    text: '₹${price.toString().replaceAllMapped(RegExp(r'(\\d{1,3})(?=(\\d{3})+(?!\\d))'), (Match m) => '${m[1]},')}',
+                    text:
+                        '₹${price.toString().replaceAllMapped(RegExp(r'(\\d{1,3})(?=(\\d{3})+(?!\\d))'), (Match m) => '${m[1]},')}',
                     style: GoogleFonts.inter(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
@@ -186,10 +256,17 @@ class BasicSetupStep extends ConsumerWidget {
     return TextField(
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: GoogleFonts.inter(color: Colors.black, fontSize: 14, fontWeight: FontWeight.w500),
+        hintStyle: GoogleFonts.inter(
+          color: Colors.black,
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+        ),
         filled: true,
         fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 20,
+          vertical: 16,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(24),
           borderSide: BorderSide(color: Colors.grey[300]!),

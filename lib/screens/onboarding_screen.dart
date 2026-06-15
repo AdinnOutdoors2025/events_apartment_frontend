@@ -173,14 +173,14 @@ class OnboardingContent extends StatelessWidget {
             width: 40,
           ),
         ),
-        SizedBox(height: MediaQuery.of(context).size.height * 0.06),
+        SizedBox(height: MediaQuery.of(context).size.height * 0.010),
         Image.asset(
           index == 0
               ? AppImages.onBoarding1
               : index == 1
               ? AppImages.onBoarding2
               : AppImages.onBoarding3,
-          height: MediaQuery.of(context).size.height * 0.35,
+          height: MediaQuery.of(context).size.height * 0.32,
           fit: BoxFit.fill,
           width: double.infinity,
         ),

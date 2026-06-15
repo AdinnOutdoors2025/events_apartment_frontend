@@ -7,13 +7,27 @@ import 'package:apartment_client_app/screens/main_navigation.dart';
 import 'package:apartment_client_app/screens/brand_profile_screen.dart';
 import 'package:apartment_client_app/screens/community_details_screen.dart';
 import 'package:apartment_client_app/screens/campaign_builder_screen.dart';
+import 'package:apartment_client_app/screens/booking_success_screen.dart';
 import 'package:apartment_client_app/screens/spaces_screen.dart';
 import 'package:apartment_client_app/screens/splash_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.dark,
+      systemNavigationBarColor: Colors.white,
+      systemNavigationBarIconBrightness: Brightness.dark,
+    ),
+  );
   runApp(const ProviderScope(child: MyApp()));
 }
 
@@ -44,6 +58,7 @@ class MyApp extends StatelessWidget {
         '/spacesScreen': (context) => const SpacesScreen(),
         '/communityDetails': (context) => const CommunityDetailsScreen(),
         '/campaignBuilder': (context) => const CampaignBuilderScreen(),
+        '/bookingSuccess': (context) => const BookingSuccessScreen(),
       },
     );
   }

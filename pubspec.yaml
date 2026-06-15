@@ -43,6 +43,11 @@ dependencies:
   intl: ^0.20.2
   flutter_svg: ^2.3.0
   image_picker: ^1.2.2
+  record: ^7.0.0
+  audioplayers: ^6.7.1
+  path_provider: ^2.1.5
+  syncfusion_flutter_datepicker: ^33.2.12
+  ffmpeg_kit_flutter_new: ^4.2.1
 
 dev_dependencies:
   flutter_test:

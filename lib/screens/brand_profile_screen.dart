@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../providers/brand_form_provider.dart';
+import '../providers/main_navigation_provider.dart';
 import '../widgets/brand_text_field.dart';
 
 class BrandProfileScreen extends ConsumerStatefulWidget {
@@ -65,6 +66,7 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
               final response = await ApiService().skipProfile();
 
               if (response.success == true && context.mounted) {
+                ref.read(bottomNavigationIndex.notifier).state = 0;
                 Navigator.pushReplacementNamed(context, '/bottomNav');
               }
             },
@@ -218,15 +220,30 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
             const SizedBox(height: 24),
 
             buildLabel('PRODUCT / SERVICE DESCRIPTION'),
-            buildTextField('Premium electric SUV'),
+            buildTextField(
+              'Premium electric SUV',
+              onChanged: (value) {
+                notifier.updateProductDescription(value);
+              },
+            ),
             const SizedBox(height: 24),
 
             buildLabel('TARGET CUSTOMER'),
-            buildTextField('Urban families, 35–55, ₹1Cr+ home value'),
+            buildTextField(
+              'Urban families, 35–55, ₹1Cr+ home value',
+              onChanged: (value) {
+                notifier.updateTargetCustomer(value);
+              },
+            ),
             const SizedBox(height: 24),
 
             buildLabel('AVERAGE PRODUCT PRICE'),
-            buildTextField('₹ 65,00,000'),
+            buildTextField(
+              '₹ 65,00,000',
+              onChanged: (value) {
+                notifier.updateAvgProductPrice(int.tryParse(value) ?? 0);
+              },
+            ),
             const SizedBox(height: 24),
 
             buildLabel('CAMPAIGN GOAL'),
@@ -255,6 +272,7 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
                             .read(brandFormProvider.notifier)
                             .saveProfile();
                         if (success && context.mounted) {
+                          ref.read(bottomNavigationIndex.notifier).state = 0;
                           Navigator.pushReplacementNamed(context, '/bottomNav');
                         }
                       }
@@ -285,6 +303,7 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
 
   void showLogoPicker(BuildContext context, WidgetRef ref) {
     showModalBottomSheet(
+      useSafeArea: true,
       context: context,
       backgroundColor: Colors.black,
       shape: const RoundedRectangleBorder(

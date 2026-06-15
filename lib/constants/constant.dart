@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class StorageService {
   static const String tokenKey = "jwt_token";
-  static const String idKey = "jwt_token";
+  static const String idKey = "user_id";
 
   /// Save Token
   static Future<void> saveToken(String token) async {
@@ -133,4 +133,21 @@ String formatIndianNumber(int number, {bool isCurrency = false}) {
     }
   }
   return isCurrency ? '₹$result' : result;
+}
+String formatCompact(num value) {
+  if (value >= 100000) {
+    final lakhs = value / 100000;
+    return lakhs % 1 == 0
+        ? '${lakhs.toInt()}L'
+        : '${lakhs.toStringAsFixed(1)}L';
+  }
+
+  if (value >= 1000) {
+    final thousands = value / 1000;
+    return thousands % 1 == 0
+        ? '${thousands.toInt()}K'
+        : '${thousands.toStringAsFixed(1)}K';
+  }
+
+  return value.toInt().toString();
 }

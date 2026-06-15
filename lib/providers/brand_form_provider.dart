@@ -26,7 +26,6 @@ class BrandFormState {
   final String selectedIndustry;
   final String selectedCampaignGoal;
 
-
   const BrandFormState({
     this.isLoading = false,
     this.ownerName = '',
@@ -44,8 +43,6 @@ class BrandFormState {
     this.selectedIndustry = '',
     this.selectedCampaignGoal = '',
   });
-
-
 
   BrandFormState copyWith({
     bool? isLoading,
@@ -74,9 +71,7 @@ class BrandFormState {
       isGstVerified: isGstVerified ?? this.isGstVerified,
       businessName: businessName ?? this.businessName,
       businessAddress: businessAddress ?? this.businessAddress,
-      logoImage: logoImage == _unset
-          ? this.logoImage
-          : logoImage as File?,
+      logoImage: logoImage == _unset ? this.logoImage : logoImage as File?,
       productDescription: productDescription ?? this.productDescription,
       targetCustomer: targetCustomer ?? this.targetCustomer,
       avgProductPrice: avgProductPrice ?? this.avgProductPrice,
@@ -98,7 +93,6 @@ class BrandFormState {
   }
 
   bool get canSubmit {
-
     final industryValid = selectedIndustry.trim().isNotEmpty;
     final productValid = productDescription.trim().isNotEmpty;
     final targetValid = targetCustomer.trim().isNotEmpty;
@@ -106,8 +100,14 @@ class BrandFormState {
     final priceValid = avgProductPrice > 0;
     final logoValid = logoImage != null;
 
-    return
-        industryValid &&
+    print('industryValid: $industryValid');
+    print('productValid: $productValid');
+    print('targetValid: $targetValid');
+    print('campaignValid: $campaignValid');
+    print('priceValid: $priceValid');
+    print('logoValid: $logoValid');
+
+    return industryValid &&
         productValid &&
         targetValid &&
         campaignValid &&
@@ -171,7 +171,7 @@ class BrandFormNotifier extends StateNotifier<BrandFormState> {
     try {
       state = state.copyWith(isLoading: true);
 
-      final response = await apiService.saveProfile(state,2);
+      final response = await apiService.saveProfile(state, 2);
 
       if (response.success == true) {
         AppToast.showSuccess(response.message ?? "Profile saved");

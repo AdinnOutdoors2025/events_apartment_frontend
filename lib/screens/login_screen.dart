@@ -64,12 +64,13 @@ class LoginPage extends ConsumerWidget {
                     color: Colors.black,
                     borderRadius: BorderRadius.circular(24),
                     gradient: const LinearGradient(
-                      colors: [Color(0xFF0A0A0A), Color(0xFF2B0000)],
+                      colors: [Color(0xFF0A0A0A), Color(0xFF0A0A0A)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
                   ),
                   child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -91,18 +92,19 @@ class LoginPage extends ConsumerWidget {
                             'Campaigns for\npremium communities,\nbuilt in minutes.',
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: 20,
+                              fontSize: 15,
                               fontWeight: FontWeight.bold,
                               height: 1.2,
                             ),
                           ),
                         ],
                       ),
-                      SvgPicture.asset(
+                      Image.asset(AppImages.loginAssets,width: 80,height: 90,fit: BoxFit.cover,),
+                      /*SvgPicture.asset(
                         AppImages.loginAsset,
                         height: 80,
                         width: 40,
-                      ),
+                      ),*/
                     ],
                   ),
                 ),

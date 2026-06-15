@@ -1,17 +1,22 @@
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 
 import '../constants/constant.dart';
+import '../models/apartment_field_list.dart';
 import '../providers/campaign_provider.dart';
+import '../utils/api_service.dart';
 import '../widgets/animated_price_text.dart';
-import 'campaign_steps/basic_setup_step.dart';
 import 'campaign_steps/branding_setup_step.dart';
 import 'campaign_steps/space_schedule_step.dart';
-import 'campaign_steps/stage_audio_step.dart';
+import 'campaign_steps/stage_setup_step.dart';
 import 'campaign_steps/promoters_step.dart';
 import 'campaign_steps/gifts_experiences_step.dart';
 import 'campaign_steps/notes_step.dart';
+import 'campaign_steps/customer_details_step.dart';
 import 'campaign_steps/brief_step.dart';
 import 'campaign_steps/review_step.dart';
 
@@ -28,10 +33,10 @@ class _CampaignBuilderScreenState extends ConsumerState<CampaignBuilderScreen> {
   late int _highestReachedStep;
   final PageController _pageController = PageController();
 
+
   @override
   void initState() {
     super.initState();
-    // Assuming if it's draft, we initialize with draftStep
     final isDraft = ref.read(campaignProvider).isDraft;
     _currentStep = isDraft ? ref.read(campaignProvider).draftStep : 0;
     _highestReachedStep = _currentStep;
@@ -44,24 +49,25 @@ class _CampaignBuilderScreenState extends ConsumerState<CampaignBuilderScreen> {
 
   final List<String> _steps = [
     'Space',
-    'Basic',
     'Branding',
     'Stage',
     'Promoters',
     'Gifts',
     'Notes',
+    'Client',
     'Brief',
     'Review',
   ];
 
   @override
   Widget build(BuildContext context) {
-    final communityName =
-        ModalRoute.of(context)?.settings.arguments as String? ??
-        'Community Name';
+    final apartmentFieldLists =
+        ModalRoute.of(context)!.settings.arguments as ApartmentFieldsList;
     final state = ref.watch(campaignProvider);
     final viewModel = ref.read(campaignProvider.notifier);
     final estimatedTotal = viewModel.estimatedTotal;
+
+    final apartment = apartmentFieldLists.data?.apartment;
 
     return PopScope(
       canPop: false,
@@ -97,7 +103,7 @@ class _CampaignBuilderScreenState extends ConsumerState<CampaignBuilderScreen> {
                 ),
               ),
               Text(
-                communityName,
+                apartment?.apartmentName ?? '',
                 style: GoogleFonts.inter(
                   color: Colors.black,
                   fontSize: 16,
@@ -113,7 +119,7 @@ class _CampaignBuilderScreenState extends ConsumerState<CampaignBuilderScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: 20.0,
-                vertical: 12.0,
+                vertical: 5.0,
               ),
               child: Container(
                 padding: const EdgeInsets.symmetric(
@@ -145,7 +151,7 @@ class _CampaignBuilderScreenState extends ConsumerState<CampaignBuilderScreen> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            communityName,
+                            apartment?.apartmentName ?? '',
                             style: GoogleFonts.inter(
                               color: Colors.black,
                               fontSize: 14,
@@ -186,7 +192,7 @@ class _CampaignBuilderScreenState extends ConsumerState<CampaignBuilderScreen> {
             ),
 
             SizedBox(
-              height: 40,
+              height: 35,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -202,7 +208,7 @@ class _CampaignBuilderScreenState extends ConsumerState<CampaignBuilderScreen> {
                       }
                     },
                     child: Padding(
-                      padding: const EdgeInsets.only(right: 16.0),
+                      padding: const EdgeInsets.only(right: 16.0,top: 5),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
@@ -215,10 +221,27 @@ class _CampaignBuilderScreenState extends ConsumerState<CampaignBuilderScreen> {
                             margin: const EdgeInsets.only(bottom: 6),
                           ),
                           if (isPast)
-                            const Icon(
-                              Icons.check,
-                              size: 12,
-                              color: Colors.black,
+                            Row(
+                              children: [
+                                Text(
+                                  _steps[index],
+                                  style: GoogleFonts.inter(
+                                    fontSize: 10,
+                                    fontWeight: isPast
+                                        ? FontWeight.bold
+                                        : FontWeight.w500,
+                                    color: isPast
+                                        ? const Color(0xFFE5212A)
+                                        : Colors.grey[500],
+                                  ),
+                                ),
+                                SizedBox(width: 3,),
+                                const Icon(
+                                  Icons.check,
+                                  size: 12,
+                                  color: Colors.black,
+                                ),
+                              ],
                             )
                           else
                             Text(
@@ -248,25 +271,29 @@ class _CampaignBuilderScreenState extends ConsumerState<CampaignBuilderScreen> {
               child: PageView(
                 controller: _pageController,
                 physics: const NeverScrollableScrollPhysics(),
-                // Disable swipe to force using Continue button
                 children: [
-                  const SpaceScheduleStep(),
-                  const BasicSetupStep(),
-                  const BrandingSetupStep(),
-                  const StageAudioStep(),
+                  SpaceScheduleStep(apartmentFieldsList: apartmentFieldLists),
+                  BrandingSetupStep(apartmentFieldsList: apartmentFieldLists),
+                  StageSetupStep(apartmentFieldsList: apartmentFieldLists),
                   const PromotersStep(),
-                  const GiftsExperiencesStep(),
+                  GiftsExperiencesStep(
+                    apartmentFieldsList: apartmentFieldLists,
+                  ),
                   const NotesStep(),
-                  BriefStep(communityName: communityName),
+                  const CustomerDetailsStep(),
+                  BriefStep(communityName: apartment?.apartmentName ?? ''),
                   ReviewStep(onEdit: _goToStep),
                 ],
               ),
             ),
+            SizedBox(height: 50,)
           ],
         ),
         // Persistent Bottom Bar
-        bottomSheet: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        bottomSheet: MediaQuery.of(context).viewInsets.bottom > 0
+            ? null
+            : Container(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
@@ -278,35 +305,39 @@ class _CampaignBuilderScreenState extends ConsumerState<CampaignBuilderScreen> {
               ),
             ],
           ),
-          child: SafeArea(
+          child: Padding(
+            padding: EdgeInsets.only(
+
+              bottom: MediaQuery.of(context).viewPadding.bottom,
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'ESTIMATED TOTAL',
-                        style: GoogleFonts.inter(
-                          color: Colors.grey[600],
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 1.2,
-                        ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'ESTIMATED TOTAL',
+                      style: GoogleFonts.inter(
+                        color: Colors.grey[600],
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.2,
                       ),
-                      AnimatedPriceText(
-                        targetPrice: estimatedTotal,
-                        style: GoogleFonts.inter(
-                          color: Colors.black,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
+                    ),
+                    AnimatedPriceText(
+                      targetPrice: estimatedTotal,
+                      style: GoogleFonts.inter(
+                        color: Colors.black,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
+                ),
 
-                if (_currentStep != _steps.length - 1) SizedBox(height: 16),
+                if (_currentStep != _steps.length - 1) const SizedBox(height: 5),
 
                 // Buttons
                 if (_currentStep == _steps.length - 1)
@@ -315,7 +346,7 @@ class _CampaignBuilderScreenState extends ConsumerState<CampaignBuilderScreen> {
                       Expanded(
                         child: OutlinedButton(
                           onPressed: () {
-                            _goToStep(7); // Brief Step
+                            _goToStep(_steps.length - 2); // Brief Step
                           },
                           style: OutlinedButton.styleFrom(
                             backgroundColor: Colors.white,
@@ -339,9 +370,68 @@ class _CampaignBuilderScreenState extends ConsumerState<CampaignBuilderScreen> {
                       Expanded(
                         flex: 2,
                         child: ElevatedButton(
-                          onPressed: () {
-                            viewModel.finishCampaign();
-                            Navigator.pop(context);
+                          onPressed: () async {
+                            showDialog(
+                              context: context,
+                              barrierDismissible: false,
+                              builder: (context) => const Center(
+                                child: CircularProgressIndicator(color: Color(0xFFE5212A)),
+                              ),
+                            );
+
+                            try {
+                              await ApiService().createCampaign(state, apartmentFieldLists);
+                              if (context.mounted) {
+                                Navigator.pop(context); // pop loading
+                                
+                                // Prepare booking summary details before clearing campaign state
+                                final apartmentName = apartment?.apartmentName ?? 'Apartment';
+                                final location = apartment?.location ?? 'Location';
+                                final stayDates = state.selectedStart != null && state.selectedEnd != null
+                                    ? "${DateFormat('E, d MMM yyyy').format(state.selectedStart!)} – ${DateFormat('E, d MMM yyyy').format(state.selectedEnd!)}"
+                                    : 'Dates';
+                                final totalAmount = "₹${estimatedTotal.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}";
+                                final bookingId = "BKNG-${DateTime.now().year}-${DateTime.now().month.toString().padLeft(2, '0')}${DateTime.now().day.toString().padLeft(2, '0')}-${(DateTime.now().millisecondsSinceEpoch % 10000).toString().padLeft(4, '0')}";
+
+                                final bookingItem = {
+                                  'bookingId': bookingId,
+                                  'apartmentName': apartmentName,
+                                  'location': location,
+                                  'stayDates': stayDates,
+                                  'totalAmount': totalAmount,
+                                  'status': 'Confirmed',
+                                  'nights': '${state.days} nights',
+                                };
+
+                                // Save to SharedPreferences for Campaigns tab
+                                final prefs = await SharedPreferences.getInstance();
+                                final list = prefs.getStringList('booked_campaigns') ?? [];
+                                list.insert(0, jsonEncode(bookingItem));
+                                await prefs.setStringList('booked_campaigns', list);
+
+                                viewModel.finishCampaign();
+                                
+                                Navigator.pushReplacementNamed(
+                                  context,
+                                  '/bookingSuccess',
+                                  arguments: bookingItem,
+                                );
+                              }
+                            } catch (e) {
+                              if (context.mounted) {
+                                Navigator.pop(context); // pop loading
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      e.toString().replaceAll('Exception: ', ''),
+                                      style: GoogleFonts.inter(fontWeight: FontWeight.w500),
+                                    ),
+                                    backgroundColor: const Color(0xFFE5212A),
+                                    behavior: SnackBarBehavior.floating,
+                                  ),
+                                );
+                              }
+                            }
                           },
                           style: ElevatedButton.styleFrom(
                             elevation: 0,
@@ -366,9 +456,11 @@ class _CampaignBuilderScreenState extends ConsumerState<CampaignBuilderScreen> {
                 else if (_currentStep == 2)
                   Row(
                     children: [
-                      Expanded(
+                     /* Expanded(
                         child: OutlinedButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            _showLayoutPreviewDialog(state);
+                          },
                           style: OutlinedButton.styleFrom(
                             backgroundColor: const Color(0xFFF5F5F5),
                             side: BorderSide(color: Colors.grey.shade300),
@@ -388,22 +480,13 @@ class _CampaignBuilderScreenState extends ConsumerState<CampaignBuilderScreen> {
                         ),
                       ),
 
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 12),*/
 
                       Expanded(
                         flex: 2,
                         child: ElevatedButton(
                           onPressed: _isContinueEnabled(state)
-                              ? () {
-                                  if (_currentStep < _steps.length - 1) {
-                                    _goToStep(_currentStep + 1);
-                                  } else {
-                                    Navigator.pushReplacementNamed(
-                                      context,
-                                      '/bottomNav',
-                                    );
-                                  }
-                                }
+                              ? () => _handleContinue(state)
                               : null,
                           style: ElevatedButton.styleFrom(
                             elevation: 0,
@@ -430,16 +513,7 @@ class _CampaignBuilderScreenState extends ConsumerState<CampaignBuilderScreen> {
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: _isContinueEnabled(state)
-                          ? () {
-                              if (_currentStep < _steps.length - 1) {
-                                _goToStep(_currentStep + 1);
-                              } else {
-                                Navigator.pushReplacementNamed(
-                                  context,
-                                  '/bottomNav',
-                                );
-                              }
-                            }
+                          ? () => _handleContinue(state)
                           : null,
                       style: ElevatedButton.styleFrom(
                         elevation: 0,
@@ -470,18 +544,22 @@ class _CampaignBuilderScreenState extends ConsumerState<CampaignBuilderScreen> {
   bool _isContinueEnabled(CampaignState state) {
     if (_currentStep == 0) {
       return state.builderSelectedSpace != null &&
-          state.startDate != null &&
-          state.endDate != null;
+          state.schedules.isNotEmpty;
     }
-    // For other steps, just return true for now to allow navigating through the flow
+    // Stage step validation: if stage is enabled, at least one item count > 0
+    if (_currentStep == 2) {
+      if (state.stageSetup) {
+        final hasCount = state.stageCounts.values.any((c) => c > 0);
+        return hasCount;
+      }
+    }
     return true;
   }
 
   String _getContinueText() {
     if (_currentStep == 0) return 'Continue';
-    if (_currentStep == 1) return 'Continue to branding';
-    if (_currentStep == _steps.length - 3) return 'Review campaign brief';
-    if (_currentStep == _steps.length - 2) return 'Continue to estimate';
+    if (_currentStep == _steps.length - 2) return 'Review campaign brief';
+    if (_currentStep == _steps.length - 1) return 'Continue to estimate';
     return 'Continue';
   }
 
@@ -496,6 +574,186 @@ class _CampaignBuilderScreenState extends ConsumerState<CampaignBuilderScreen> {
       step,
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
+    );
+  }
+
+  void _handleContinue(CampaignState state) {
+    // Promoters step validation (index 3)
+    if (_currentStep == 3 && state.needPromoters) {
+      for (final req in state.promoterRequirements) {
+        if (req.maleCount == 0 && req.femaleCount == 0) {
+          _showErrorSnackBar('Please select a gender for all promoter requirements.');
+          return;
+        }
+        if (req.selectedDates.isEmpty) {
+          _showErrorSnackBar('Please select at least one day for all promoter requirements.');
+          return;
+        }
+      }
+    }
+
+    // Customer details validation (index 6)
+    if (_currentStep == 6) {
+      if (state.customerType == null || state.customerType!.isEmpty) {
+        _showErrorSnackBar('Please select Customer Type (Brand or Agency).');
+        return;
+      }
+      if (state.customerBrandName == null || state.customerBrandName!.trim().isEmpty) {
+        _showErrorSnackBar('Please enter Brand / Company Name.');
+        return;
+      }
+      if (state.customerContactName == null || state.customerContactName!.trim().isEmpty) {
+        _showErrorSnackBar('Please enter Contact Person Name.');
+        return;
+      }
+      final phone = state.customerPhone?.trim() ?? '';
+      if (phone.isEmpty) {
+        _showErrorSnackBar('Please enter Contact Phone Number.');
+        return;
+      }
+      if (phone.length < 10) {
+        _showErrorSnackBar('Please enter a valid 10-digit Phone Number.');
+        return;
+      }
+      final email = state.customerEmail?.trim() ?? '';
+      if (email.isEmpty) {
+        _showErrorSnackBar('Please enter Email.');
+        return;
+      }
+      final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+      if (!emailRegex.hasMatch(email)) {
+        _showErrorSnackBar('Please enter a valid Email address.');
+        return;
+      }
+      final gst = state.customerGst?.trim() ?? '';
+      if (gst.isEmpty) {
+        _showErrorSnackBar('Please enter GST Number.');
+        return;
+      }
+      if (gst.length != 15) {
+        _showErrorSnackBar('Please enter a valid 15-character GST Number.');
+        return;
+      }
+      if (state.customerDesignation == null || state.customerDesignation!.trim().isEmpty) {
+        _showErrorSnackBar('Please enter Designation.');
+        return;
+      }
+    }
+
+    if (_currentStep < _steps.length - 1) {
+      _goToStep(_currentStep + 1);
+    } else {
+      Navigator.pushReplacementNamed(context, '/bottomNav');
+    }
+  }
+
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: GoogleFonts.inter(fontWeight: FontWeight.w500),
+        ),
+        backgroundColor: const Color(0xFFE5212A),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+    );
+  }
+
+  void _showLayoutPreviewDialog(CampaignState state) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: Text(
+          'LAYOUT PREVIEW',
+          style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 18, letterSpacing: 1.0),
+          textAlign: TextAlign.center,
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              height: 200,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFE5212A), width: 1.5),
+              ),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  // Space Box
+                  Container(
+                    width: 140,
+                    height: 140,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFF0EF),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFFE5212A), width: 2, style: BorderStyle.solid),
+                    ),
+                    alignment: Alignment.topCenter,
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Text(
+                      state.builderSelectedSpace ?? 'Space',
+                      style: GoogleFonts.inter(fontWeight: FontWeight.bold, color: const Color(0xFFE5212A), fontSize: 12),
+                    ),
+                  ),
+                  // Render a couple of icons as a visual representation of layout
+                  Positioned(
+                    top: 60,
+                    left: 100,
+                    child: Column(
+                      children: [
+                        const Icon(Icons.table_restaurant, color: Colors.black, size: 24),
+                        Text('Table', style: GoogleFonts.inter(fontSize: 8)),
+                      ],
+                    ),
+                  ),
+                  Positioned(
+                    top: 60,
+                    right: 100,
+                    child: Column(
+                      children: [
+                        const Icon(Icons.chair, color: Colors.black, size: 24),
+                        Text('Chair', style: GoogleFonts.inter(fontSize: 8)),
+                      ],
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 40,
+                    child: Column(
+                      children: [
+                        const Icon(Icons.co_present, color: Colors.black, size: 24),
+                        Text('Backdrop', style: GoogleFonts.inter(fontSize: 8)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Interactive 2D schematic of your selected activation footprint (${state.builderSelectedSpace ?? "No space select"}). Items will be arranged in this designated boundary.',
+              style: GoogleFonts.inter(fontSize: 12, color: Colors.grey[600], height: 1.4),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Close',
+              style: GoogleFonts.inter(fontWeight: FontWeight.bold, color: Colors.black),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -570,3 +828,4 @@ class _CampaignBuilderScreenState extends ConsumerState<CampaignBuilderScreen> {
         false;
   }
 }
+

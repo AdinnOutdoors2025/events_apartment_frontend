@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../providers/brand_form_provider.dart';
+import '../providers/main_navigation_provider.dart';
+import '../utils/api_service.dart';
 import '../widgets/brand_text_field.dart';
 
 class BrandInfoScreen extends ConsumerWidget {
@@ -30,8 +32,13 @@ class BrandInfoScreen extends ConsumerWidget {
         ),*/
         actions: [
           TextButton(
-            onPressed: () {
-              Navigator.pushReplacementNamed(context, '/bottomNav');
+            onPressed: () async {
+              final response = await ApiService().skipProfile();
+
+              if (response.success == true && context.mounted) {
+                ref.read(bottomNavigationIndex.notifier).state = 0;
+                Navigator.pushReplacementNamed(context, '/bottomNav');
+              }
             },
             child: Text(
               'Skip',

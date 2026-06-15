@@ -15,50 +15,98 @@ class BriefStep extends ConsumerWidget {
 
     final df = DateFormat('E, d MMM yyyy');
     String dateRange = '';
-    if (state.startDate != null && state.endDate != null) {
-      if (state.startDate == state.endDate) {
-        dateRange = df.format(state.startDate!);
+    if (state.selectedStart != null && state.selectedEnd != null) {
+      if (state.selectedStart == state.selectedEnd) {
+        dateRange = df.format(state.selectedStart!);
       } else {
-        dateRange = '${df.format(state.startDate!)} → ${df.format(state.endDate!)}';
+        dateRange = '${df.format(state.selectedStart!)} → ${df.format(state.selectedEnd!)}';
       }
     }
 
     // Build lists for summary
-    List<String> setups = [];
-    List<String> brandings = [];
-    state.brandingCounts.forEach((key, val) {
+    List<String> catBrandings = [];
+    state.categoryBrandingCounts.forEach((key, val) {
       if (val > 0) {
-        // Just rough logic: Backdrops/Standees are branding, others are setup
-        if (key.contains('Backdrop') || key.contains('Standee') || key.contains('Flex')) {
-          brandings.add('$val × $key');
-        } else {
-          setups.add('$val × $key');
-        }
+        catBrandings.add('$val × $key');
       }
     });
+    final catBrandingText = catBrandings.isNotEmpty ? catBrandings.join('\n') : '-';
 
-    List<String> stageAudio = [];
-    if (state.stageSetup && state.stageFootprint != null) {
-      stageAudio.add('Stage Setup — ${state.stageFootprint}');
-    }
-    state.audioCounts.forEach((key, val) {
+    List<String> unCatBrandings = [];
+    state.unCategoryBrandingCounts.forEach((key, val) {
       if (val > 0) {
-        stageAudio.add('$val × $key');
+        unCatBrandings.add('$val × $key');
       }
     });
+    final unCatBrandingText = unCatBrandings.isNotEmpty ? unCatBrandings.join('\n') : '-';
 
-    String promoters = 'Not included';
-    if (state.needPromoters && state.promoterCount > 0) {
-      promoters = '${state.promoterCount} × ${state.promoterRole ?? 'Promoter'}';
+    String stageSetupText = '-';
+    if (state.stageSetup) {
+      List<String> stageItems = [];
+      if (state.stageFootprint != null) {
+        stageItems.add('Footprint: ${state.stageFootprint}');
+      }
+      state.stageCounts.forEach((key, val) {
+        if (val > 0) stageItems.add('$val × $key');
+      });
+      state.audioCounts.forEach((key, val) {
+        if (val > 0) stageItems.add('$val × $key');
+      });
+      stageSetupText = stageItems.isNotEmpty ? stageItems.join('\n') : 'Enabled';
+    } else {
+      stageSetupText = 'Not Required';
     }
 
-    List<String> engagements = [];
+    String promotersText = '-';
+    if (state.needPromoters) {
+      List<String> promoterDetails = [];
+      promoterDetails.add('Total: ${state.totalPromoterCount} promoters');
+      for (int i = 0; i < state.promoterRequirements.length; i++) {
+        final req = state.promoterRequirements[i];
+        final parts = <String>[];
+        if (req.maleCount > 0) parts.add('${req.maleCount} Male');
+        if (req.femaleCount > 0) parts.add('${req.femaleCount} Female');
+        if (req.languages.isNotEmpty) parts.add('Languages: ${req.languages.join(", ")}');
+        if (req.appearances.isNotEmpty) parts.add('Appearances: ${req.appearances.join(", ")}');
+        if (req.selectedDates.isNotEmpty) parts.add('${req.selectedDates.length} days');
+        promoterDetails.add('Req ${i + 1}: ${parts.join(" | ")}');
+      }
+      promotersText = promoterDetails.join('\n');
+    } else {
+      promotersText = 'Not Required';
+    }
+
+    List<String> giftsList = [];
     state.giftCounts.forEach((key, val) {
-      if (val > 0) engagements.add('$val × $key');
+      if (val > 0) giftsList.add('$val × $key');
     });
+    final giftsText = giftsList.isNotEmpty ? giftsList.join('\n') : '-';
+
+    List<String> experiencesList = [];
     state.experienceCounts.forEach((key, val) {
-      if (val > 0) engagements.add('$val × $key');
+      if (val > 0) experiencesList.add('$val × $key');
     });
+    final experiencesText = experiencesList.isNotEmpty ? experiencesList.join('\n') : '-';
+
+    final List<String> dailyTimesList = [];
+
+    for (final schedule in state.schedules) {
+      dailyTimesList.add(
+        '${DateFormat('dd MMM yyyy').format(schedule.startDate)}'
+            ' → '
+            '${DateFormat('dd MMM yyyy').format(schedule.endDate)}'
+            ' (${schedule.fromTime} - ${schedule.toTime})',
+      );
+    }
+
+    final dailyTimesText =
+    dailyTimesList.isNotEmpty
+        ? dailyTimesList.join('\n')
+        : '-';
+
+    final voiceNoteText = state.voiceNotePath != null
+        ? 'Recorded (${state.voiceNoteDuration}s)'
+        : 'None';
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
@@ -107,7 +155,8 @@ class BriefStep extends ConsumerWidget {
               children: [
                 // Header
                 Container(
-                  padding: const EdgeInsets.only(right: 60,left: 30,top: 10,bottom: 10),
+                  padding: const EdgeInsets.only(right: 30,left: 30,top: 10,bottom: 10),
+                  width: double.infinity,
                   decoration: const BoxDecoration(
                     color: Color(0xFF0C0C0C),
                     borderRadius: BorderRadius.only(
@@ -129,7 +178,7 @@ class BriefStep extends ConsumerWidget {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Royal Enfield × $communityName',
+                        '${state.customerBrandName ?? 'Brand'} × $communityName',
                         style: GoogleFonts.inter(
                           color: Colors.white,
                           fontSize: 18,
@@ -139,7 +188,7 @@ class BriefStep extends ConsumerWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        state.startDate != null ? df.format(state.startDate!) : '',
+                        state.selectedStart != null ? df.format(state.selectedStart!) : '',
                         style: GoogleFonts.inter(
                           color: Colors.grey[400],
                           fontSize: 12,
@@ -148,26 +197,26 @@ class BriefStep extends ConsumerWidget {
                     ],
                   ),
                 ),
-                
+
                 // Rows
-                _buildRow('BRAND', 'Royal Enfield'),
-                _buildRow('OBJECTIVE', state.campaignObjective ?? '-'),
+                _buildRow('BRAND', state.customerBrandName ?? '-'),
                 _buildRow('CAMPAIGN TYPE', state.campaignObjective ?? '-'),
                 _buildRow('COMMUNITY', communityName),
-                _buildRow('TG RANGE', '28–45 yrs · SEC A'),
                 _buildRow('DATES', dateRange.isNotEmpty ? dateRange : '-'),
-                _buildRow('DAILY WINDOW', '10:00 AM – 06:00 PM'),
-                _buildRow('ACTIVATION SPACE', state.builderSelectedSpace ?? '-'),
-                _buildRow('SETUP', setups.isNotEmpty ? setups.join(' + ') : '-'),
-                _buildRow('BRANDING', brandings.isNotEmpty ? brandings.join(' + ') : '-'),
-                _buildRow('STAGE & AUDIO', stageAudio.isNotEmpty ? stageAudio.join(' + ') : '-'),
-                _buildRow('PROMOTERS', promoters),
-                _buildRow('ENGAGEMENT', engagements.isNotEmpty ? engagements.join(' + ') : '-'),
+                _buildRow('DAILY TIMESLOTS', dailyTimesText),
+                _buildRow('ACTIVATION SPACE', '${state.builderSelectedSpace} sq.ft'),
+                _buildRow('CATEGORIZED BRANDING', catBrandingText),
+                _buildRow('UNCATEGORIZED BRANDING', unCatBrandingText),
+                _buildRow('STAGE SETUP', stageSetupText),
+                _buildRow('PROMOTERS', promotersText),
+                _buildRow('ENGAGEMENT GIFTS', giftsText),
+                _buildRow('ENGAGEMENT EXPERIENCES', experiencesText),
+                _buildRow('VOICE INSTRUCTION', voiceNoteText),
                 _buildRow('NOTES', state.notes.isNotEmpty ? state.notes : '-', isLast: true),
               ],
             ),
           ),
-          
+
           const SizedBox(height: 24),
 
           // Preview button

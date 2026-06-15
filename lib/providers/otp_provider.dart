@@ -84,10 +84,9 @@ class OtpViewModel extends Notifier<OtpState> {
 
       if (response["success"] == true) {
         print(response["message"]);
-        print(response["testOtp"]);
+        print(response["data"]["testOtp"]);
         AppToast.showSuccess(
-          '${response["message"]} and your test Otp is ${response['testOtp']}' ??
-              "OTP sent successfully",
+          '${response["message"]} and your test Otp is ${response["data"]['testOtp']}',
         );
         startResendTimer();
         return;
@@ -116,8 +115,18 @@ class OtpViewModel extends Notifier<OtpState> {
       );
 
       if (response.success == true) {
-        await StorageService.saveToken(response.token!);
-        await StorageService.saveId(response.user!.sId!);
+        print(response.data?.token ?? "token is empty");
+        await StorageService.saveToken(response.data!.token!);
+
+        final savedToken = await StorageService.getToken();
+        print('Saved Token: $savedToken');
+        await StorageService.saveId(response.data!.user!.sId!);
+
+        final savedToken1 = await StorageService.getToken();
+        print('Saved Token 1: $savedToken1');
+
+        final savedID = await StorageService.getId();
+        print("Saved Id :$savedID");
 
         AppToast.showSuccess(response.message ?? '');
 

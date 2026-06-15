@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 import '../constants/color.dart';
 import '../providers/splash_screen_providers.dart';
+import '../providers/main_navigation_provider.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -24,9 +25,12 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    ref.listen<bool>(splashProvider, (_, isCompleted) {
-      if (isCompleted) {
-        Navigator.pushNamed(context, '/onboarding');
+    ref.listen<String?>(splashProvider, (_, targetRoute) {
+      if (targetRoute != null) {
+        if (targetRoute == '/bottomNav') {
+          ref.read(bottomNavigationIndex.notifier).state = 0;
+        }
+        Navigator.pushReplacementNamed(context, targetRoute);
       }
     });
 

@@ -34,6 +34,7 @@ class Data {
   int? averageProductPrice;
   String? campaignGoal;
   int? profileCompleted;
+  int? customerType;
   String? userId;
   String? sId;
   String? createdAt;
@@ -52,6 +53,7 @@ class Data {
         this.averageProductPrice,
         this.campaignGoal,
         this.profileCompleted,
+        this.customerType,
         this.userId,
         this.sId,
         this.createdAt,
@@ -72,6 +74,7 @@ class Data {
     averageProductPrice = json['averageProductPrice'];
     campaignGoal = json['campaignGoal'];
     profileCompleted = json['profileCompleted'];
+    customerType = json['customerType'];
     userId = json['userId'];
     sId = json['_id'];
     createdAt = json['createdAt'];
@@ -95,6 +98,7 @@ class Data {
     data['averageProductPrice'] = averageProductPrice;
     data['campaignGoal'] = campaignGoal;
     data['profileCompleted'] = profileCompleted;
+    data['customerType'] = customerType;
     return data;
   }
 }

@@ -57,9 +57,9 @@ class LoginViewModel extends Notifier<LoginState> {
       if (response["success"] == true) {
 
         print(response["message"]);
-        print(response["testOtp"]);
+        print(response["data"]["testOtp"]);
         AppToast.showSuccess(
-          '${response["message"]} and your test Otp is ${response['testOtp']}',
+          '${response["message"]} and your test Otp is ${response["data"]['testOtp']}',
         );
 
         return true;

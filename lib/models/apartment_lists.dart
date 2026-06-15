@@ -1,313 +1,366 @@
 class ApartmentList {
-  bool? success;
-  String? message;
-  Data? data;
+  final bool success;
+  final String message;
+  final ApartmentData? data;
 
-  ApartmentList({this.success, this.message, this.data});
+  ApartmentList({required this.success, required this.message, this.data});
 
-  ApartmentList.fromJson(Map<String, dynamic> json) {
-    success = json['success'];
-    message = json['message'];
-    data = json['data'] != null ?  Data.fromJson(json['data']) : null;
+  factory ApartmentList.fromJson(Map<String, dynamic> json) {
+    return ApartmentList(
+      success: json['success'] ?? false,
+      message: json['message'] ?? '',
+      data: json['data'] != null ? ApartmentData.fromJson(json['data']) : null,
+    );
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['success'] = success;
-    data['message'] = message;
-    if (this.data != null) {
-      data['data'] = this.data!.toJson();
-    }
-    return data;
+    return {'success': success, 'message': message, 'data': data?.toJson()};
   }
 }
 
-class Data {
-  int? pageNumber;
-  int? count;
-  int? totalCount;
-  int? totalPages;
-  File? file;
-  List<String>? locationFilter;
-  List<String>? cityFilter;
-  List<String>? stateFilter;
-  PriceRange? priceRange;
-  List<Apartments>? apartments;
+class ApartmentData {
+  final int pageNumber;
+  final int count;
+  final int totalCount;
+  final int totalPages;
+  final FileDetails? file;
+  final List<dynamic> locationFilter;
+  final List<dynamic> cityFilter;
+  final List<dynamic> stateFilter;
+  final List<dynamic> apartmentGroupNameFilter;
+  final PriceRange? priceRange;
+  final List<Apartment> apartments;
 
-  Data(
-      {this.pageNumber,
-        this.count,
-        this.totalCount,
-        this.totalPages,
-        this.file,
-        this.locationFilter,
-        this.cityFilter,
-        this.stateFilter,
-        this.priceRange,
-        this.apartments});
+  ApartmentData({
+    required this.pageNumber,
+    required this.count,
+    required this.totalCount,
+    required this.totalPages,
+    this.file,
+    required this.locationFilter,
+    required this.cityFilter,
+    required this.stateFilter,
+    this.priceRange,
+    required this.apartments,
+    required this.apartmentGroupNameFilter,
+  });
 
-  Data.fromJson(Map<String, dynamic> json) {
-    pageNumber = json['pageNumber'];
-    count = json['count'];
-    totalCount = json['totalCount'];
-    totalPages = json['totalPages'];
-    file = json['file'] != null ?  File.fromJson(json['file']) : null;
-    locationFilter = json['locationFilter'].cast<String>();
-    cityFilter = json['cityFilter'].cast<String>();
-    stateFilter = json['stateFilter'].cast<String>();
-    priceRange = json['priceRange'] != null
-        ?  PriceRange.fromJson(json['priceRange'])
-        : null;
-    if (json['apartments'] != null) {
-      apartments = <Apartments>[];
-      json['apartments'].forEach((v) {
-        apartments!.add( Apartments.fromJson(v));
-      });
-    }
+  factory ApartmentData.fromJson(Map<String, dynamic> json) {
+    return ApartmentData(
+      pageNumber: json['pageNumber'] ?? 0,
+      count: json['count'] ?? 0,
+      totalCount: json['totalCount'] ?? 0,
+      totalPages: json['totalPages'] ?? 0,
+      file: json['file'] != null ? FileDetails.fromJson(json['file']) : null,
+      locationFilter: json['locationFilter'] ?? [],
+      cityFilter: json['cityFilter'] ?? [],
+      stateFilter: json['stateFilter'] ?? [],
+      priceRange: json['priceRange'] != null
+          ? PriceRange.fromJson(json['priceRange'])
+          : null,
+      apartments: (json['apartments'] as List<dynamic>? ?? [])
+          .map((e) => Apartment.fromJson(e))
+          .toList(),
+      apartmentGroupNameFilter: json['apartmentGroupNameFilter'] ?? [],
+    );
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['pageNumber'] = pageNumber;
-    data['count'] = count;
-    data['totalCount'] = totalCount;
-    data['totalPages'] = totalPages;
-    if (file != null) {
-      data['file'] = file!.toJson();
-    }
-    data['locationFilter'] = locationFilter;
-    data['cityFilter'] = cityFilter;
-    data['stateFilter'] = stateFilter;
-    if (priceRange != null) {
-      data['priceRange'] = priceRange!.toJson();
-    }
-    if (apartments != null) {
-      data['apartments'] = apartments!.map((v) => v.toJson()).toList();
-    }
-    return data;
+    return {
+      'pageNumber': pageNumber,
+      'count': count,
+      'totalCount': totalCount,
+      'totalPages': totalPages,
+      'file': file?.toJson(),
+      'locationFilter': locationFilter,
+      'cityFilter': cityFilter,
+      'stateFilter': stateFilter,
+      'priceRange': priceRange?.toJson(),
+      'apartments': apartments.map((e) => e.toJson()).toList(),
+    };
   }
 }
 
-class File {
-  String? sessionId;
-  String? fileName;
-  int? totalRows;
-  int? insertedCount;
-  int? updatedCount;
-  int? skippedCount;
-  String? uploadedAt;
+class FileDetails {
+  final String sessionId;
+  final String fileName;
+  final int totalRows;
+  final int insertedCount;
+  final int updatedCount;
+  final int skippedCount;
+  final String uploadedAt;
 
-  File(
-      {this.sessionId,
-        this.fileName,
-        this.totalRows,
-        this.insertedCount,
-        this.updatedCount,
-        this.skippedCount,
-        this.uploadedAt});
+  FileDetails({
+    required this.sessionId,
+    required this.fileName,
+    required this.totalRows,
+    required this.insertedCount,
+    required this.updatedCount,
+    required this.skippedCount,
+    required this.uploadedAt,
+  });
 
-  File.fromJson(Map<String, dynamic> json) {
-    sessionId = json['sessionId'];
-    fileName = json['fileName'];
-    totalRows = json['totalRows'];
-    insertedCount = json['insertedCount'];
-    updatedCount = json['updatedCount'];
-    skippedCount = json['skippedCount'];
-    uploadedAt = json['uploadedAt'];
+  factory FileDetails.fromJson(Map<String, dynamic> json) {
+    return FileDetails(
+      sessionId: json['sessionId'] ?? '',
+      fileName: json['fileName'] ?? '',
+      totalRows: json['totalRows'] ?? 0,
+      insertedCount: json['insertedCount'] ?? 0,
+      updatedCount: json['updatedCount'] ?? 0,
+      skippedCount: json['skippedCount'] ?? 0,
+      uploadedAt: json['uploadedAt'] ?? '',
+    );
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['sessionId'] = sessionId;
-    data['fileName'] = fileName;
-    data['totalRows'] = totalRows;
-    data['insertedCount'] = insertedCount;
-    data['updatedCount'] = updatedCount;
-    data['skippedCount'] = skippedCount;
-    data['uploadedAt'] = uploadedAt;
-    return data;
+    return {
+      'sessionId': sessionId,
+      'fileName': fileName,
+      'totalRows': totalRows,
+      'insertedCount': insertedCount,
+      'updatedCount': updatedCount,
+      'skippedCount': skippedCount,
+      'uploadedAt': uploadedAt,
+    };
   }
 }
 
 class PriceRange {
-  int? minTG;
-  int? maxTG;
-  int? minRent;
-  int? maxRent;
+  final int minTG;
+  final int maxTG;
+  final int minRent;
+  final int maxRent;
 
-  PriceRange({this.minTG, this.maxTG, this.minRent, this.maxRent});
+  PriceRange({
+    required this.minTG,
+    required this.maxTG,
+    required this.minRent,
+    required this.maxRent,
+  });
 
-  PriceRange.fromJson(Map<String, dynamic> json) {
-    minTG = json['minTG'];
-    maxTG = json['maxTG'];
-    minRent = json['minRent'];
-    maxRent = json['maxRent'];
+  factory PriceRange.fromJson(Map<String, dynamic> json) {
+    return PriceRange(
+      minTG: json['minTG'] ?? 0,
+      maxTG: json['maxTG'] ?? 0,
+      minRent: json['minRent'] ?? 0,
+      maxRent: json['maxRent'] ?? 0,
+    );
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['minTG'] = minTG;
-    data['maxTG'] = maxTG;
-    data['minRent'] = minRent;
-    data['maxRent'] = maxRent;
-    return data;
+    return {
+      'minTG': minTG,
+      'maxTG': maxTG,
+      'minRent': minRent,
+      'maxRent': maxRent,
+    };
   }
 }
 
-class Apartments {
-  String? sId;
-  String? createdBySession;
-  String? lastUpdatedBySession;
-  String? skippedBySession;
-  String? apartmentName;
-  String? city;
-  String? state;
-  String? location;
-  String? jioLocation;
-  String? contactPersonName;
-  String? contactPersonPhone;
-  BankDetails? bankDetails;
-  String? permissionStatus;
-  String? rating;
-  int? residencyCount;
-  int? approxPeopleCount;
-  int? fromTGValues;
-  int? toTGValues;
-  String? isActive;
-  int? perDayRent;
-  String? updatedBy;
-  String? createdAt;
-  String? updatedAt;
-  String? apartmentId;
-  int? iV;
-  String? sessionStatus;
+class Apartment {
+  final String id;
+  final SessionInfo? createdBySession;
+  final SessionInfo? lastUpdatedBySession;
+  final dynamic skippedBySession;
 
-  Apartments(
-      {this.sId,
-        this.createdBySession,
-        this.lastUpdatedBySession,
-        this.skippedBySession,
-        this.apartmentName,
-        this.city,
-        this.state,
-        this.location,
-        this.jioLocation,
-        this.contactPersonName,
-        this.contactPersonPhone,
-        this.bankDetails,
-        this.permissionStatus,
-        this.rating,
-        this.residencyCount,
-        this.approxPeopleCount,
-        this.fromTGValues,
-        this.toTGValues,
-        this.isActive,
-        this.perDayRent,
-        this.updatedBy,
-        this.createdAt,
-        this.updatedAt,
-        this.apartmentId,
-        this.iV,
-        this.sessionStatus});
+  final String apartmentName;
+  final String apartmentGroupName;
+  final String city;
+  final String state;
+  final String location;
+  final String geoLocation;
+  final String contactPersonName;
+  final String contactPersonPhone;
 
-  Apartments.fromJson(Map<String, dynamic> json) {
-    sId = json['_id'];
-    createdBySession = json['createdBySession'];
-    lastUpdatedBySession = json['lastUpdatedBySession'];
-    skippedBySession = json['skippedBySession'];
-    apartmentName = json['apartmentName'];
-    city = json['city'];
-    state = json['state'];
-    location = json['location'];
-    jioLocation = json['jioLocation'];
-    contactPersonName = json['contactPersonName'];
-    contactPersonPhone = json['contactPersonPhone'];
-    bankDetails = json['bankDetails'] != null
-        ?  BankDetails.fromJson(json['bankDetails'])
-        : null;
-    permissionStatus = json['permissionStatus'];
-    rating = json['rating'];
-    residencyCount = json['residencyCount'];
-    approxPeopleCount = json['approxPeopleCount'];
-    fromTGValues = json['fromTGValues'];
-    toTGValues = json['toTGValues'];
-    isActive = json['isActive'];
-    perDayRent = json['perDayRent'];
-    updatedBy = json['updatedBy'];
-    createdAt = json['createdAt'];
-    updatedAt = json['updatedAt'];
-    apartmentId = json['apartmentId'];
-    iV = json['__v'];
-    sessionStatus = json['sessionStatus'];
+  final BankDetails? bankDetails;
+
+  final String permissionStatus;
+  final String rating;
+
+  final int residencyCount;
+  final int approxPeopleCount;
+  final int fromTGValues;
+  final int toTGValues;
+
+  final String isActive;
+  final int perDayRent;
+
+  final String updatedBy;
+  final String createdAt;
+  final String updatedAt;
+
+  final String apartmentId;
+  final int v;
+  final String sessionStatus;
+
+  Apartment({
+    required this.id,
+    this.createdBySession,
+    this.lastUpdatedBySession,
+    this.skippedBySession,
+    required this.apartmentName,
+    required this.apartmentGroupName,
+    required this.city,
+    required this.state,
+    required this.location,
+    required this.geoLocation,
+    required this.contactPersonName,
+    required this.contactPersonPhone,
+    this.bankDetails,
+    required this.permissionStatus,
+    required this.rating,
+    required this.residencyCount,
+    required this.approxPeopleCount,
+    required this.fromTGValues,
+    required this.toTGValues,
+    required this.isActive,
+    required this.perDayRent,
+    required this.updatedBy,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.apartmentId,
+    required this.v,
+    required this.sessionStatus,
+  });
+
+  factory Apartment.fromJson(Map<String, dynamic> json) {
+    return Apartment(
+      id: json['_id'] ?? '',
+      createdBySession: json['createdBySession'] != null
+          ? SessionInfo.fromJson(json['createdBySession'])
+          : null,
+      lastUpdatedBySession: json['lastUpdatedBySession'] != null
+          ? SessionInfo.fromJson(json['lastUpdatedBySession'])
+          : null,
+      skippedBySession: json['skippedBySession'],
+
+      apartmentName: json['ApartmentName'] ?? '',
+      apartmentGroupName: json['ApartmentGroupName'] ?? '',
+      city: json['City'] ?? '',
+      state: json['State'] ?? '',
+      location: json['Location'] ?? '',
+      geoLocation: json['GeoLocation'] ?? '',
+      contactPersonName: json['ContactPersonName'] ?? '',
+      contactPersonPhone: json['ContactPersonPhone'] ?? '',
+
+      bankDetails: json['bankDetails'] != null
+          ? BankDetails.fromJson(json['bankDetails'])
+          : null,
+
+      permissionStatus: json['PermissionStatus'] ?? '',
+      rating: json['Rating'] ?? '',
+
+      residencyCount: json['ResidencyCount'] ?? 0,
+      approxPeopleCount: json['ApproxPeopleCount'] ?? 0,
+      fromTGValues: json['FromTGValues'] ?? 0,
+      toTGValues: json['ToTGValues'] ?? 0,
+
+      isActive: json['isActive'] ?? '',
+      perDayRent: json['PerDayRent'] ?? 0,
+
+      updatedBy: json['updatedBy'] ?? '',
+      createdAt: json['createdAt'] ?? '',
+      updatedAt: json['updatedAt'] ?? '',
+
+      apartmentId: json['apartmentId'] ?? '',
+      v: json['__v'] ?? 0,
+      sessionStatus: json['sessionStatus'] ?? '',
+    );
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data =  <String, dynamic>{};
-    data['_id'] = sId;
-    data['createdBySession'] = createdBySession;
-    data['lastUpdatedBySession'] = lastUpdatedBySession;
-    data['skippedBySession'] = skippedBySession;
-    data['apartmentName'] = apartmentName;
-    data['city'] = city;
-    data['state'] = state;
-    data['location'] = location;
-    data['jioLocation'] = jioLocation;
-    data['contactPersonName'] = contactPersonName;
-    data['contactPersonPhone'] = contactPersonPhone;
-    if (bankDetails != null) {
-      data['bankDetails'] = bankDetails!.toJson();
-    }
-    data['permissionStatus'] = permissionStatus;
-    data['rating'] = rating;
-    data['residencyCount'] = residencyCount;
-    data['approxPeopleCount'] = approxPeopleCount;
-    data['fromTGValues'] = fromTGValues;
-    data['toTGValues'] = toTGValues;
-    data['isActive'] = isActive;
-    data['perDayRent'] = perDayRent;
-    data['updatedBy'] = updatedBy;
-    data['createdAt'] = createdAt;
-    data['updatedAt'] = updatedAt;
-    data['apartmentId'] = apartmentId;
-    data['__v'] = iV;
-    data['sessionStatus'] = sessionStatus;
-    return data;
+    return {
+      '_id': id,
+      'createdBySession': createdBySession?.toJson(),
+      'lastUpdatedBySession': lastUpdatedBySession?.toJson(),
+      'skippedBySession': skippedBySession,
+      'ApartmentName': apartmentName,
+      'ApartmentGroupName': apartmentGroupName,
+      'City': city,
+      'State': state,
+      'Location': location,
+      'GeoLocation': geoLocation,
+      'ContactPersonName': contactPersonName,
+      'ContactPersonPhone': contactPersonPhone,
+      'bankDetails': bankDetails?.toJson(),
+      'PermissionStatus': permissionStatus,
+      'Rating': rating,
+      'ResidencyCount': residencyCount,
+      'ApproxPeopleCount': approxPeopleCount,
+      'FromTGValues': fromTGValues,
+      'ToTGValues': toTGValues,
+      'isActive': isActive,
+      'PerDayRent': perDayRent,
+      'updatedBy': updatedBy,
+      'createdAt': createdAt,
+      'updatedAt': updatedAt,
+      'apartmentId': apartmentId,
+      '__v': v,
+      'sessionStatus': sessionStatus,
+    };
+  }
+}
+
+class SessionInfo {
+  final String id;
+  final String fileName;
+  final String createdAt;
+
+  SessionInfo({
+    required this.id,
+    required this.fileName,
+    required this.createdAt,
+  });
+
+  factory SessionInfo.fromJson(Map<String, dynamic> json) {
+    return SessionInfo(
+      id: json['_id'] ?? '',
+      fileName: json['fileName'] ?? '',
+      createdAt: json['createdAt'] ?? '',
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {'_id': id, 'fileName': fileName, 'createdAt': createdAt};
   }
 }
 
 class BankDetails {
-  String? accountHolderName;
-  String? bankName;
-  String? accountNumber;
-  String? ifscCode;
-  String? phoneNumber;
-  String? upiId;
+  final String accountHolderName;
+  final String bankName;
+  final String accountNumber;
+  final String ifscCode;
+  final String phoneNumber;
+  final String upiID;
 
-  BankDetails(
-      {this.accountHolderName,
-        this.bankName,
-        this.accountNumber,
-        this.ifscCode,
-        this.phoneNumber,
-        this.upiId});
+  BankDetails({
+    required this.accountHolderName,
+    required this.bankName,
+    required this.accountNumber,
+    required this.ifscCode,
+    required this.phoneNumber,
+    required this.upiID,
+  });
 
-  BankDetails.fromJson(Map<String, dynamic> json) {
-    accountHolderName = json['accountHolderName'];
-    bankName = json['bankName'];
-    accountNumber = json['accountNumber'];
-    ifscCode = json['ifscCode'];
-    phoneNumber = json['phoneNumber'];
-    upiId = json['upiId'];
+  factory BankDetails.fromJson(Map<String, dynamic> json) {
+    return BankDetails(
+      accountHolderName: json['AccountHolderName'] ?? '',
+      bankName: json['BankName'] ?? '',
+      accountNumber: json['AccountNumber'] ?? '',
+      ifscCode: json['IfscCode'] ?? '',
+      phoneNumber: json['PhoneNumber'] ?? '',
+      upiID: json['UpiID'] ?? '',
+    );
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['accountHolderName'] = accountHolderName;
-    data['bankName'] = bankName;
-    data['accountNumber'] = accountNumber;
-    data['ifscCode'] = ifscCode;
-    data['phoneNumber'] = phoneNumber;
-    data['upiId'] = upiId;
-    return data;
+    return {
+      'AccountHolderName': accountHolderName,
+      'BankName': bankName,
+      'AccountNumber': accountNumber,
+      'IfscCode': ifscCode,
+      'PhoneNumber': phoneNumber,
+      'UpiID': upiID,
+    };
   }
 }

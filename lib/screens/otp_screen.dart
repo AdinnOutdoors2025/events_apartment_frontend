@@ -5,6 +5,7 @@ import 'package:pinput/pinput.dart';
 import '../constants/color.dart';
 import '../constants/constant.dart';
 import '../providers/otp_provider.dart';
+import '../providers/main_navigation_provider.dart';
 
 class OtpPage extends ConsumerWidget {
   const OtpPage({super.key});
@@ -145,7 +146,7 @@ class OtpPage extends ConsumerWidget {
   }
 }
 
-class OtpForm extends StatelessWidget {
+class OtpForm extends ConsumerWidget {
   final OtpState state;
   final OtpViewModel viewModel;
   final String? otpType;
@@ -160,7 +161,7 @@ class OtpForm extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final defaultPinTheme = PinTheme(
       width: 60,
       height: 60,
@@ -237,8 +238,14 @@ class OtpForm extends StatelessWidget {
               );
 
               if (response != null && context.mounted) {
-                final profileCompleted = response.user?.profileCompleted;
-                final customerType = response.user?.customerType;
+                final profileCompleted = response.data?.user?.profileCompleted;
+                final customerType = response.data?.user?.customerType;
+
+                if (otpType != 'register' &&
+                    profileCompleted != 0 &&
+                    profileCompleted != 1) {
+                  ref.read(bottomNavigationIndex.notifier).state = 0;
+                }
 
                 Navigator.pushReplacementNamed(
                   context,
